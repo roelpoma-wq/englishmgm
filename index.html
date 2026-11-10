@@ -195,6 +195,31 @@ td,th{padding:10px 7px}
 .reward-toast.level-up{background:linear-gradient(120deg,#6541df,#b13bce)}
 @keyframes rewardIn{from{opacity:0;transform:translate(-50%,-12px) scale(.9)}to{opacity:1;transform:translate(-50%,0) scale(1)}}
 @media(prefers-reduced-motion:reduce){.reward-toast{animation:none}}
+
+/* Avatar Studio — lightweight, mobile-first */
+.avatar-zone{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;margin:12px 0}
+.avatar-art{position:relative;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;width:116px;height:142px;border-radius:28px;background:linear-gradient(155deg,#e8faff,#f5e8ff);box-shadow:inset 0 -7px 0 #0000000b,0 9px 20px #27245b20;overflow:hidden;isolation:isolate;flex-shrink:0}
+.avatar-art.big{width:180px;height:210px}
+.avatar-art .av-hair{position:absolute;top:16%;width:60%;height:40%;background:var(--hair,#372337);border-radius:48% 48% 32% 32%;transform:rotate(-3deg);box-shadow:inset -9px 4px 0 #ffffff20}
+.avatar-art .av-hair.long{height:57%;border-radius:44% 44% 24% 24%}
+.avatar-art .av-hair.curly{border-radius:40%;box-shadow:-8px 0 0 var(--hair),8px 0 0 var(--hair),inset -6px 4px 0 #ffffff26}
+.avatar-art .av-hair.spiky{clip-path:polygon(0 36%,10% 5%,29% 27%,43% 0,58% 26%,76% 4%,88% 29%,100% 10%,100% 100%,0 100%)}
+.avatar-art .av-face{position:absolute;top:27%;width:48%;height:40%;background:var(--skin,#edb58f);border-radius:43% 43% 46% 46%;box-shadow:inset -6px -4px 0 #00000012;z-index:2}
+.avatar-art .av-eyes{position:absolute;top:43%;width:28%;display:flex;justify-content:space-between;z-index:3}
+.avatar-art .av-eyes:before,.avatar-art .av-eyes:after{content:"";width:7px;height:9px;background:#30243f;border-radius:50%}
+.avatar-art .av-smile{position:absolute;top:55%;width:13%;height:7%;border-bottom:3px solid #8b4353;border-radius:50%;z-index:3}
+.avatar-art .av-body{position:absolute;bottom:-14%;width:78%;height:42%;background:var(--shirt,#7461ef);border-radius:45% 45% 0 0;box-shadow:inset -12px 0 0 #00000016;z-index:1}
+.avatar-art .av-acc{position:absolute;top:35%;font-size:28px;z-index:5;line-height:1}
+.avatar-art .av-acc.cap,.avatar-art .av-acc.crown{top:7%;font-size:40px}
+.avatar-art.big .av-acc{font-size:40px}.avatar-art.big .av-acc.cap,.avatar-art.big .av-acc.crown{font-size:54px}
+.avatar-studio{max-width:580px}.avatar-studio h3{margin:0 0 5px}
+.avatar-studio .av-hint{font-size:13px;opacity:.8}
+.avatar-group{margin:12px 0}.avatar-group strong{display:block;margin-bottom:7px}
+.avatar-options{display:flex;gap:7px;flex-wrap:wrap}
+.avatar-choice{border:2px solid #d9d8f5;border-radius:14px;background:#fff;color:#282447;padding:8px 10px;font-weight:700;font-size:13px;cursor:pointer}
+.avatar-choice.active{border-color:#7758ff;background:#eeeaff}
+.avatar-choice:disabled{opacity:.46;cursor:not-allowed}
+.avatar-studio .avatar-zone{margin:8px auto 14px}
 </style></head><body><main id="app"></main><dialog id="d"></dialog>
 <script src="config.js"></script>
 <script>
@@ -260,17 +285,70 @@ function out(){
   sessionStorage.clear();tok=null;login();
 }
 
+
+const AV_DEFAULT={hair:"default",outfit:"default",hairColor:"natural",skin:"default",accessory:"none"};
+const AV_OPTIONS={
+ hair:[["default","Clásico"],["short","Corto"],["long","Largo"],["curly","Rizado"],["spiky","Puntas"]],
+ outfit:[["default","Uniforme"],["casual","Casual"],["sport","Deportivo"],["hero","Héroe"]],
+ hairColor:[["natural","Natural"],["brown","Castaño"],["blonde","Rubio"],["red","Rojo"],["blue","Azul"]],
+ skin:[["default","Natural"],["light","Claro"],["medium","Medio"],["tan","Trigueño"],["dark","Oscuro"]],
+ accessory:[["none","Sin accesorio"],["glasses","Gafas"],["cap","Gorra"],["crown","Corona"]]
+};
+const AV_LEVEL={hair:1,outfit:1,hairColor:2,skin:2,accessory:3};
+const AV_LABEL={hair:"💇 Peinado · 25 pts",outfit:"👕 Ropa · 25 pts",hairColor:"🎨 Color de cabello · 45 pts",skin:"🧑 Tono de piel · 45 pts",accessory:"🕶️ Accesorios · 67 pts"};
+let avatarStudent=null,avatarDraft=null,avatarBusy=false,avatarEditing=false;
+function avatarClean(raw){
+ const a={...AV_DEFAULT};if(!raw||typeof raw!=="object")return a;
+ for(const k of Object.keys(a))if(AV_OPTIONS[k].some(x=>x[0]===raw[k]))a[k]=raw[k];
+ return a;
+}
+function avatarArt(raw,big=false){
+ const a=avatarClean(raw),hair={natural:"#34283a",brown:"#76482f",blonde:"#d5a847",red:"#b84842",blue:"#3e77df"}[a.hairColor];
+ const skin={default:"#e6ad89",light:"#f4d0b2",medium:"#d99b72",tan:"#ad7052",dark:"#754a39"}[a.skin];
+ const shirt={default:"#6655d7",casual:"#f17d75",sport:"#38bfa9",hero:"#e6b52d"}[a.outfit];
+ const accessory={none:"",glasses:"👓",cap:"🧢",crown:"👑"}[a.accessory];
+ return '<div class="avatar-art '+(big?'big':'')+'" style="--hair:'+hair+';--skin:'+skin+';--shirt:'+shirt+'" role="img" aria-label="Avatar personalizado"><span class="av-hair '+a.hair+'"></span><span class="av-face"></span><span class="av-eyes"></span><span class="av-smile"></span><span class="av-body"></span>'+(accessory?'<span class="av-acc '+a.accessory+'">'+accessory+'</span>':'')+'</div>';
+}
+function avatarOpen(){
+ if(!avatarStudent)return;
+ avatarDraft=avatarClean(avatarStudent.avatar_config);avatarEditing=true;
+ avatarDraw();if(!$("d").open)$("d").showModal();
+}
+function avatarClose(){if(avatarBusy)return;avatarEditing=false;shut()}
+function avatarPick(k,v){
+ if(!avatarDraft||avatarBusy||!AV_OPTIONS[k]||!AV_OPTIONS[k].some(x=>x[0]===v))return;
+ if(Number(avatarStudent.unlock_level||0)<AV_LEVEL[k]&&v!==AV_DEFAULT[k])return;
+ avatarDraft[k]=v;avatarDraw();
+}
+function avatarDraw(){
+ const level=Number(avatarStudent.unlock_level)||0;
+ const h='<div class="avatar-studio"><h3>✨ Mi avatar</h3><p class="av-hint">Personaliza tu personaje. Los desbloqueos son permanentes.</p><div class="avatar-zone">'+avatarArt(avatarDraft,true)+'</div>'+
+ Object.keys(AV_OPTIONS).map(k=>'<div class="avatar-group"><strong>'+AV_LABEL[k]+' '+(level<AV_LEVEL[k]?'🔒':'🔓')+'</strong><div class="avatar-options">'+AV_OPTIONS[k].map(([v,label])=>'<button type="button" class="avatar-choice '+(avatarDraft[k]===v?'active':'')+'" '+(avatarBusy||level<AV_LEVEL[k]&&v!==AV_DEFAULT[k]?'disabled':'')+' onclick="avatarPick(\''+k+'\',\''+v+'\')">'+label+'</button>').join('')+'</div></div>').join('')+
+ '<div class="row"><button class="btn g" onclick="avatarClose()" '+(avatarBusy?'disabled':'')+'>Cancelar</button><button class="btn ok" onclick="avatarSave()" '+(avatarBusy?'disabled':'')+'>'+(avatarBusy?'Guardando…':'💾 Guardar avatar')+'</button></div></div>';
+ $("d").innerHTML=h;
+}
+async function avatarSave(){
+ if(avatarBusy||!avatarDraft)return;avatarBusy=true;avatarDraw();
+ try{
+  const result=await rpc("student_save_avatar",{t:tok,p_avatar:avatarDraft});
+  if(!result||!result.ok)throw new Error("No se pudo guardar");
+  avatarStudent.avatar_config=avatarClean(result.avatar);avatarEditing=false;shut();rewardToast("✨ ¡Avatar guardado!");stu();
+ }catch(e){alert("No se pudo guardar el avatar: "+e.message)}
+ finally{avatarBusy=false;if(avatarEditing)avatarDraw()}
+}
+
 async function stu(){
-  if(playing)return;
+  if(playing||avatarEditing)return;
   try{
     const m=await rpc("student_me",{t:tok});if(!m)return out();
     let A=[];try{A=await rpc("student_activities",{t:tok})}catch(e){}
-    if(playing)return;
+    if(playing||avatarEditing)return;
+    avatarStudent=m;
     const p=ph(m.points),P=PH[p];
     const snap={points:Number(m.points)||0,stars:Number(m.stars)||0,phase:p};
     const prior=lastStudentSnapshot;lastStudentSnapshot=snap;
     $("app").innerHTML=`<div class="box card phase-card phase-hero p${p}" style="--pc:${P.c}">${phaseMascot(m.points)}
-    <h2 class="student-name">${esc(m.name)}</h2><span class="phase-badge">${phaseIcon[p]} ${esc(P.n)}</span><div class="pt">${m.points} <small style="font-size:16px">pts</small></div><div class="phase-stars">⭐ ${m.stars||0} · ${esc(m.room)}</div>${phaseProgress(m.points)}</div>
+    <h2 class="student-name">${esc(m.name)}</h2><span class="phase-badge">${phaseIcon[p]} ${esc(P.n)}</span><div class="pt">${m.points} <small style="font-size:16px">pts</small></div><div class="phase-stars">⭐ ${m.stars||0} · ${esc(m.room)}</div>${phaseProgress(m.points)}<div class="avatar-zone">${avatarArt(m.avatar_config)}<button class="btn ok" onclick="avatarOpen()">✨ Personalizar avatar</button></div></div>
     ${A.length?actsHtml(A):'<div class="box">🎮 Aún no hay actividades.</div>'}<button class="btn g" onclick="out()">Salir</button>`;
     if(prior){if(snap.phase>prior.phase)rewardToast('🎉 ¡Nueva fase! '+PH[snap.phase].n,true);else if(snap.points>prior.points)rewardToast('🎯 +'+(snap.points-prior.points)+' puntos');else if(snap.stars>prior.stars)rewardToast('⭐ +'+(snap.stars-prior.stars)+' estrella(s)');}
   }catch(e){}
