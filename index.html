@@ -24,6 +24,82 @@ table{width:100%;border-collapse:collapse;font-size:14px}td,th{padding:5px;borde
 .mg{display:grid;grid-template-columns:1fr 1fr;gap:10px}.mt{display:block;width:100%;padding:12px 8px;margin-bottom:8px;border-radius:12px;border:2px solid var(--ln);background:var(--bg);color:var(--ink);font-weight:600;word-break:break-word}.mt.on{border-color:var(--pri);background:color-mix(in srgb,var(--pri) 22%,var(--c))}
 .kb{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}.k{padding:10px 0;border-radius:10px;background:var(--bg);border:1px solid var(--ln);font-weight:700}.k:disabled{opacity:.3}.k.x{background:#e5484d44}
 .chip{padding:8px 14px;border-radius:99px;border:1px solid var(--ln);background:var(--c);font-weight:600}.chip.on{background:var(--pri);color:#fff}
+
+/* ENGLISH MGM · Playful Neon — fase 1: solo presentación.
+   No altera autenticación, RPC, puntajes ni datos de Supabase. */
+:root{
+  --bg:#f5f3ff;--c:#ffffff;--ink:#20213b;--mut:#6f7291;
+  --ln:#e7e3fa;--pri:#6748f5;--ok:#13b98c;--bad:#f14c79;
+  --neon-pink:#ff4da6;--neon-cyan:#00c8e8;--neon-yellow:#ffc94d;
+}
+@media(prefers-color-scheme:dark){
+  :root{--bg:#14142a;--c:#22223e;--ink:#f6f4ff;--mut:#b6b3d1;--ln:#383653;--pri:#9b7cff;--ok:#36d8a9;--bad:#ff6e91}
+}
+html{scroll-behavior:smooth}
+body{
+  min-height:100vh;
+  background:
+    radial-gradient(ellipse 55% 35% at 0% 0%,rgba(168,111,255,.18),transparent 75%),
+    radial-gradient(ellipse 45% 40% at 100% 12%,rgba(0,200,232,.13),transparent 78%),
+    var(--bg);
+  font-family:ui-rounded,"Trebuchet MS",system-ui,sans-serif;
+  line-height:1.45;
+}
+main{max-width:1100px;padding:clamp(14px,3vw,32px) clamp(12px,3vw,24px) 60px}
+h1,h2,h3{line-height:1.2;letter-spacing:-.035em}
+h1{font-size:clamp(1.8rem,5vw,2.7rem)}
+h2{font-size:clamp(1.4rem,3vw,2rem)}
+.box{
+  border:1px solid var(--ln);
+  border-radius:24px;
+  box-shadow:0 10px 35px rgba(54,40,126,.075);
+  padding:clamp(16px,2.4vw,24px);
+}
+.btn,.chip,.card,.mt,.k{transition:transform .18s ease,box-shadow .18s ease,background-color .18s ease,border-color .18s ease}
+.btn{border-radius:14px;background:linear-gradient(135deg,var(--pri),#a050e9);box-shadow:0 5px 0 rgba(57,39,132,.18);font-weight:800;min-height:44px}
+.btn.g{background:var(--c);box-shadow:none}
+.btn.ok{background:linear-gradient(135deg,var(--ok),#00aebd)}
+.btn.bad{background:linear-gradient(135deg,var(--bad),#f36c57)}
+.chip{border-radius:999px;min-height:42px;padding:9px 17px}
+.chip.on{background:linear-gradient(120deg,var(--pri),#b65aff);border-color:transparent;box-shadow:0 4px 15px rgba(112,70,245,.25)}
+.card{
+  border-radius:22px;
+  padding:18px 10px;
+  box-shadow:0 5px 15px rgba(45,31,92,.055);
+  overflow-wrap:anywhere;
+}
+.av{border-radius:22px;width:76px;height:76px;font-size:42px}
+.pt{font-size:clamp(1.8rem,4vw,2.4rem);letter-spacing:-.045em}
+.grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,175px),1fr));gap:14px}
+input,textarea,select{border-radius:14px;min-height:44px;outline-offset:2px}
+input:focus-visible,textarea:focus-visible,select:focus-visible,button:focus-visible{outline:3px solid var(--neon-cyan);outline-offset:3px}
+dialog{border:1px solid var(--ln);border-radius:24px;box-shadow:0 22px 90px rgba(16,14,47,.3)}
+.bar{height:13px;border-radius:100px}
+.bar i{border-radius:100px}
+.k{border-radius:12px;min-height:44px}
+.mt{border-radius:15px;min-height:52px}
+table{font-size:clamp(12px,1.8vw,14px)}
+td,th{padding:10px 7px}
+@media(hover:hover){
+  .btn:hover,.chip:hover,.card:hover,.mt:hover,.k:not(:disabled):hover{transform:translateY(-3px)}
+  .btn:hover,.card:hover{box-shadow:0 10px 25px rgba(85,57,177,.18)}
+}
+@media(max-width:560px){
+  main{padding:12px 10px 40px}
+  .box{border-radius:20px;margin:9px 0;padding:15px}
+  .row{gap:7px}
+  .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+  .card{padding:12px 6px;border-radius:17px}
+  .av{width:62px;height:62px;font-size:35px}
+  .btn{padding:11px 12px}
+  .kb{gap:3px}
+  .k{padding:8px 0;font-size:13px}
+  dialog{width:min(96vw,440px);padding:14px}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}
+}
+
 </style></head><body><main id="app"></main><dialog id="d"></dialog>
 <script src="config.js"></script>
 <script>
