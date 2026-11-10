@@ -183,6 +183,18 @@ td,th{padding:10px 7px}
 .phase-hero .phase-progress small{font-size:13px}
 @media(max-width:560px){.phase-card{padding:12px 7px;min-height:210px}.phase-card .av{width:64px;height:64px;font-size:37px}.phase-hero .av{width:108px;height:108px;font-size:64px}}
 @media(prefers-reduced-motion:reduce){.phase-card .phase-progress i{transition:none}}
+
+/* Lightweight phase mascots and event-only reward animations */
+.phase-mascot{position:relative;display:inline-grid;place-items:center;width:58px;height:58px;border-radius:19px;background:linear-gradient(145deg,color-mix(in srgb,var(--pc) 22%,white),color-mix(in srgb,var(--pc) 50%,#fff));border:2px solid color-mix(in srgb,var(--pc) 62%,white);box-shadow:inset 0 3px 2px rgba(255,255,255,.65),0 5px 0 color-mix(in srgb,var(--pc) 35%,transparent),0 8px 13px rgba(20,16,48,.12);font-size:32px;line-height:1}
+.phase-mascot.p0{filter:grayscale(1)}
+.phase-mascot .mascot-mark{position:absolute;right:-8px;bottom:-7px;font-size:17px;background:var(--c);border-radius:50%;padding:3px;box-shadow:0 2px 5px rgba(0,0,0,.12)}
+.phase-card .phase-mascot{margin:0 auto 4px}
+.phase-hero .phase-mascot{width:84px;height:84px;font-size:48px;margin-bottom:10px}
+.phase-hero .phase-mascot .mascot-mark{font-size:23px}
+.reward-toast{position:fixed;z-index:9999;top:18px;left:50%;transform:translateX(-50%);max-width:min(92vw,360px);padding:14px 20px;border-radius:19px;background:#262044;color:white;box-shadow:0 12px 32px rgba(20,14,50,.28);font-weight:850;text-align:center;pointer-events:none;animation:rewardIn .32s ease-out both}
+.reward-toast.level-up{background:linear-gradient(120deg,#6541df,#b13bce)}
+@keyframes rewardIn{from{opacity:0;transform:translate(-50%,-12px) scale(.9)}to{opacity:1;transform:translate(-50%,0) scale(1)}}
+@media(prefers-reduced-motion:reduce){.reward-toast{animation:none}}
 </style></head><body><main id="app"></main><dialog id="d"></dialog>
 <script src="config.js"></script>
 <script>
@@ -243,6 +255,7 @@ async function doLogin(){
 }
 function go(){role==="teacher"?tea():(stu(),timer=setInterval(stu,8000))}
 function out(){
+  lastStudentSnapshot=null;
   clearInterval(timer);if(tok)rpc("app_logout",{t:tok}).catch(()=>{});
   sessionStorage.clear();tok=null;login();
 }
@@ -254,9 +267,12 @@ async function stu(){
     let A=[];try{A=await rpc("student_activities",{t:tok})}catch(e){}
     if(playing)return;
     const p=ph(m.points),P=PH[p];
-    $("app").innerHTML=`<div class="box card phase-card phase-hero p${p}" style="--pc:${P.c}"><div class="av">${av(m.gender,m.points,m.name)}</div>
+    const snap={points:Number(m.points)||0,stars:Number(m.stars)||0,phase:p};
+    const prior=lastStudentSnapshot;lastStudentSnapshot=snap;
+    $("app").innerHTML=`<div class="box card phase-card phase-hero p${p}" style="--pc:${P.c}">${phaseMascot(m.points)}
     <h2 class="student-name">${esc(m.name)}</h2><span class="phase-badge">${phaseIcon[p]} ${esc(P.n)}</span><div class="pt">${m.points} <small style="font-size:16px">pts</small></div><div class="phase-stars">⭐ ${m.stars||0} · ${esc(m.room)}</div>${phaseProgress(m.points)}</div>
     ${A.length?actsHtml(A):'<div class="box">🎮 Aún no hay actividades.</div>'}<button class="btn g" onclick="out()">Salir</button>`;
+    if(prior){if(snap.phase>prior.phase)rewardToast('🎉 ¡Nueva fase! '+PH[snap.phase].n,true);else if(snap.points>prior.points)rewardToast('🎯 +'+(snap.points-prior.points)+' puntos');else if(snap.stars>prior.stars)rewardToast('⭐ +'+(snap.stars-prior.stars)+' estrella(s)');}
   }catch(e){}
 }
 
@@ -269,11 +285,16 @@ function drawT(){
   let h=`<header class="teacher-head"><div><span class="teacher-eyebrow">ENGLISH MGM · TEACHER SPACE</span><h1>👩‍🏫 Mi aula interactiva</h1><p>Gestiona tus salones, celebra los logros y crea actividades.</p></div><div class="teacher-head-actions"><button class="btn" onclick="actsT()">🎯 Actividades</button><button class="btn g" onclick="out()">Salir</button></div></header><section class="teacher-stats"><div class="teacher-stat"><span>🏫 Salones</span><strong>${D.length}</strong></div><div class="teacher-stat"><span>🎒 Estudiantes</span><strong>${D.reduce((n,x)=>n+(x.students||[]).length,0)}</strong></div><div class="teacher-stat"><span>⭐ Estrellas</span><strong>${D.reduce((n,x)=>n+(x.students||[]).reduce((v,y)=>v+(Number(y.stars)||0),0),0)}</strong></div></section><div class="row" style="margin:10px 0;overflow-x:auto">`+D.map(x=>`<button class="chip ${x.id===cur?"on":""}" onclick="cur='${x.id}';drawT()">${esc(x.name)}</button>`).join("")+`<button class="chip" onclick="addRoom()">+ Salón</button></div>`;
   if(r){
     h+=`<div class="row" style="margin-bottom:10px"><button class="btn g" onclick="addList()">📋 Agregar lista</button><button class="btn g" onclick="resetPins()">🔑 Nuevas claves</button><button class="btn g" onclick="renRoom()">✏️ Salón</button><button class="btn g" onclick="delRoom()">🗑 Salón</button></div><div class="grid">`+
-    r.students.map(s=>{const p=ph(s.points),P=PH[p];return `<button class="card phase-card p${p}" style="--pc:${P.c}" onclick="sheet('${s.id}')" aria-label="${esc(s.name)}: ${s.points} puntos, ${s.stars||0} estrellas, fase ${esc(P.n)}"><div class="av">${av(s.gender,s.points,s.id)}</div><span class="phase-badge">${phaseIcon[p]} ${esc(P.n)}</span><b class="student-name">${esc(s.name)}</b><div class="pt">${s.points} <small style="font-size:12px">pts</small></div><span class="phase-stars">⭐ ${s.stars||0}</span>${phaseProgress(s.points)}</button>`}).join("")+`</div>`;
+    r.students.map(s=>{const p=ph(s.points),P=PH[p];return `<button class="card phase-card p${p}" style="--pc:${P.c}" onclick="sheet('${s.id}')" aria-label="${esc(s.name)}: ${s.points} puntos, ${s.stars||0} estrellas, fase ${esc(P.n)}">${phaseMascot(s.points)}<span class="phase-badge">${phaseIcon[p]} ${esc(P.n)}</span><b class="student-name">${esc(s.name)}</b><div class="pt">${s.points} <small style="font-size:12px">pts</small></div><span class="phase-stars">⭐ ${s.stars||0}</span>${phaseProgress(s.points)}</button>`}).join("")+`</div>`;
   }else h+=`<div class="box">Crea tu primer salón con «+ Salón».</div>`;
   $("app").innerHTML=h;
 }
 const phaseIcon=["🌧️","🌤️","🚀","👑","🌟"];
+const phaseFaces=["😢","🥺","😎","🦸","😇"];
+function phaseMascot(points){const i=ph(points);return '<span class="phase-mascot p'+i+'" style="--pc:'+PH[i].c+'" role="img" aria-label="Insignia de fase '+i+'"><span>'+phaseFaces[i]+'</span><span class="mascot-mark">'+phaseIcon[i]+'</span></span>'}
+let rewardTimer=null;
+function rewardToast(message,level=false){const old=document.querySelector('.reward-toast');if(old)old.remove();clearTimeout(rewardTimer);const el=document.createElement('div');el.className='reward-toast'+(level?' level-up':'');el.setAttribute('role','status');el.textContent=message;document.body.appendChild(el);rewardTimer=setTimeout(()=>el.remove(),level?3100:1900)}
+let lastStudentSnapshot=null;
 function phaseProgress(points){const p=Math.max(0,Number(points)||0),i=ph(p),next=[21,41,67,91][i];if(!next)return '<div class="phase-progress"><small>🏆 ¡Fase máxima alcanzada!</small><div class="bar"><i style="width:100%"></i></div></div>';const prev=[0,21,41,67][i],pct=Math.max(0,Math.min(100,(p-prev)/(next-prev)*100));return '<div class="phase-progress"><small>🎯 '+(next-p)+' pts para la siguiente fase</small><div class="bar"><i style="width:'+pct.toFixed(1)+'%"></i></div></div>'}
 const cs=()=>D.find(r=>r.id===cur);
 function addRoom(){const n=prompt("Nombre del salón (ej. 3ro A)");if(n&&n.trim())act(async()=>{await rpc("teacher_add_room",{t:tok,n});await tea()})}
@@ -310,8 +331,11 @@ function aw(d,star=false){
   awardBusy=true;
   act(async()=>{
     try{
+      const previous=cs()?.students.find(x=>x.id===sel);const oldPoints=Number(previous?.points)||0,oldStars=Number(previous?.stars)||0;
       await rpc("teacher_award",{t:tok,sid:sel,delta:d,star});
       await tea();
+      const updated=cs()?.students.find(x=>x.id===sel);
+      if(updated){const actual=star?(Number(updated.stars)-oldStars):(Number(updated.points)-oldPoints);if(!star&&ph(updated.points)>ph(oldPoints))rewardToast('🎉 ¡Nueva fase! '+PH[ph(updated.points)].n,true);else if(actual)rewardToast((star?'⭐ ':'🎯 ')+(actual>0?'+':'')+actual+(star?' estrella(s)':' puntos'));}
       if(cs()?.students.some(x=>x.id===sel))sheet(sel);
     }finally{awardBusy=false}
   });
