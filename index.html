@@ -529,11 +529,25 @@ function actsT(){act(async()=>{const L=await rpc("teacher_activities",{t:tok});A
 let ED=null;
 function newAct(){ED={id:null,title:"",minutes:5,kind:"translate",qs:[{q:"",a:"",img:null}]};edr()}
 function editAct(id){act(async()=>{const x=await rpc("teacher_get_activity",{t:tok,aid:id});ED={id,title:x.title,minutes:x.minutes,kind:x.kind,qs:x.questions.map(z=>({q:z.q,a:z.a.join(" | "),img:z.img||null}))};edr()})}
+function pasteActivityCells(event,index,field){
+ const raw=event.clipboardData?.getData("text/plain");
+ if(!raw||!(/[\t\r\n]/.test(raw)))return;
+ const rows=raw.replace(/\r\n?/g,"\n").split("\n").filter((line,i,arr)=>!(i===arr.length-1&&line==="")).map(line=>line.split("\t"));
+ if(rows.length===1&&rows[0].length===1)return;
+ const paired=field==="q"&&rows.some(r=>r.length>1);
+ const conflicts=rows.filter((r,n)=>{const old=ED.qs[index+n];return old&&((r[0]?.trim()&&old[field]&&old[field]!==r[0].trim())||(paired&&r[1]?.trim()&&old.a&&old.a!==r[1].trim()));}).length;
+ event.preventDefault();
+ if(conflicts&&!confirm("Se reemplazará contenido de "+conflicts+" fila(s). ¿Continuar?"))return;
+ while(ED.qs.length<index+rows.length)ED.qs.push({q:"",a:"",img:null});
+ rows.forEach((r,n)=>{const item=ED.qs[index+n];if(r[0]?.trim())item[field]=r[0].trim();if(paired&&r[1]?.trim())item.a=r[1].trim();});
+ edr();
+}
 function edr(){
   const h=ED.kind==="hangman",mt=ED.kind==="matching",sc=$("d").scrollTop;
   dlg(`<h3>${ED.id?"✏️ Editar":"➕ Nueva"} actividad</h3><label>Título</label><input value="${esc(ED.title)}" oninput="ED.title=this.value">
   ${ED.id?"":`<label>Tipo</label><select onchange="ED.kind=this.value;edr()"><option value="translate" ${!h?"selected":""}>🌐 Translate</option><option value="hangman" ${h?"selected":""}>🔤 Hang Man</option><option value="matching" ${mt?"selected":""}>🔗 Matching</option></select><label>Minutos</label><input type="number" min="1" value="${ED.minutes}" oninput="ED.minutes=+this.value">`}
-  ${ED.qs.map((x,i)=>`<div class="box"><b>${i+1}</b><br><label>${h?"Pista":mt?"Elemento (izquierda)":"Pregunta"}</label><input value="${esc(x.q)}" oninput="ED.qs[${i}].q=this.value"><label>${h?"Palabra (solo letras)":mt?"Su pareja correcta (derecha)":"Respuesta(s) correcta(s), separadas por |"}</label><input value="${esc(x.a)}" oninput="ED.qs[${i}].a=this.value">
+  <p class="av-hint">📋 Puedes pegar listas completas desde Excel: una columna llena filas consecutivas; dos columnas en Pista/Pregunta completan también las respuestas.</p>
+  ${ED.qs.map((x,i)=>`<div class="box"><b>${i+1}</b><br><label>${h?"Pista":mt?"Elemento (izquierda)":"Pregunta"}</label><input value="${esc(x.q)}" onpaste="pasteActivityCells(event,${i},'q')" oninput="ED.qs[${i}].q=this.value"><label>${h?"Palabra (solo letras)":mt?"Su pareja correcta (derecha)":"Respuesta(s) correcta(s), separadas por |"}</label><input value="${esc(x.a)}" onpaste="pasteActivityCells(event,${i},'a')" oninput="ED.qs[${i}].a=this.value">
   <div class="row">${mt?"":`${x.img?`<img src="${x.img}" style="height:60px;border-radius:8px">`:""}<label class="btn g" style="margin:0;cursor:pointer">📷 ${x.img?"Cambiar":"Imagen"}<input type="file" accept="image/*" hidden onchange="pickImg(${i},this)"></label>${x.img?`<button class="btn g" onclick="ED.qs[${i}].img=null;edr()">Quitar</button>`:""}`}<button class="btn g" onclick="ED.qs.splice(${i},1);if(!ED.qs.length)ED.qs.push({q:'',a:'',img:null});edr()">🗑</button></div></div>`).join("")}
   <button class="btn g" onclick="ED.qs.push({q:'',a:'',img:null});edr()">+ Pregunta</button><br><br>
   <div class="row"><button class="btn g" onclick="actsT()">Volver</button><button class="btn ok" onclick="saveAct()">Guardar</button></div>`);
