@@ -244,7 +244,16 @@ td,th{padding:10px 7px}
 .teacher-character-pair .teacher-mascot-small{position:absolute;right:-18px;bottom:-9px;display:flex;align-items:center;justify-content:center;width:63px;height:63px;max-width:none;flex:none;z-index:8;filter:drop-shadow(0 3px 3px #0002)}
 .teacher-character-pair .teacher-mascot-small .phase-mascot{transform:scale(.66);transform-origin:center;margin:0;flex-shrink:0}
 @media(max-width:420px){.teacher-character-pair{width:94px;height:112px}.teacher-character-pair .teacher-avatar-wrap .avatar-art{width:94px;height:112px}.teacher-character-pair .teacher-mascot-small{right:-14px;bottom:-8px;width:58px;height:58px}.teacher-character-pair .teacher-mascot-small .phase-mascot{transform:scale(.59)}}
-.avatar-art.avatar-svg{padding:0;display:block;overflow:hidden;border:0;background:none}.avatar-art.avatar-svg svg{display:block;width:100%;height:100%}.avatar-art.avatar-svg:before,.avatar-art.avatar-svg:after{display:none}.avatar-art.avatar-svg{box-shadow:0 5px 12px #293e6c24,inset 0 0 0 2px #ffffffb8;border-radius:24px}.avatar-art.avatar-svg svg{shape-rendering:geometricPrecision}.avatar-studio .avatar-art.avatar-svg{box-shadow:0 8px 22px #293e6c20}.avatar-choice:focus-visible{outline:3px solid #6748f4;outline-offset:2px}.avatar-preview-zone{background:linear-gradient(145deg,#f0f6ff,#fff0f8);border-radius:20px;padding:8px;margin:8px 0}.avatar-preview-zone .avatar-zone{margin:0}.avatar-preview-caption{display:block;text-align:center;color:#5d5a7b;font-size:12px;font-weight:700}.avatar-options{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}.avatar-choice{min-width:0;min-height:74px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:6px 2px;font-size:11px;overflow-wrap:anywhere}.avatar-option-icon{font-size:25px;line-height:1.1}.avatar-color-dot{display:block;width:29px;height:29px;border-radius:50%;border:3px solid white;box-shadow:0 0 0 1px #aaa8cc}dialog:has(.avatar-studio){width:min(96vw,600px);max-width:600px}@media(max-width:410px){.avatar-options{gap:3px}.avatar-choice{font-size:10px;min-height:69px;padding:4px 1px}}</style></head><body><main id="app"></main><dialog id="d"></dialog>
+.avatar-art.avatar-svg{padding:0;display:block;overflow:hidden;border:0;background:none}.avatar-art.avatar-svg svg{display:block;width:100%;height:100%}.avatar-art.avatar-svg:before,.avatar-art.avatar-svg:after{display:none}.avatar-art.avatar-svg{box-shadow:0 5px 12px #293e6c24,inset 0 0 0 2px #ffffffb8;border-radius:24px}.avatar-art.avatar-svg svg{shape-rendering:geometricPrecision}.avatar-studio .avatar-art.avatar-svg{box-shadow:0 8px 22px #293e6c20}.avatar-choice:focus-visible{outline:3px solid #6748f4;outline-offset:2px}.avatar-preview-zone{background:linear-gradient(145deg,#f0f6ff,#fff0f8);border-radius:20px;padding:8px;margin:8px 0}.avatar-preview-zone .avatar-zone{margin:0}.avatar-preview-caption{display:block;text-align:center;color:#5d5a7b;font-size:12px;font-weight:700}.avatar-options{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}.avatar-choice{min-width:0;min-height:74px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:6px 2px;font-size:11px;overflow-wrap:anywhere}.avatar-option-icon{font-size:25px;line-height:1.1}.avatar-color-dot{display:block;width:29px;height:29px;border-radius:50%;border:3px solid white;box-shadow:0 0 0 1px #aaa8cc}dialog:has(.avatar-studio){width:min(96vw,600px);max-width:600px}@media(max-width:410px){.avatar-options{gap:3px}.avatar-choice{font-size:10px;min-height:69px;padding:4px 1px}}
+/* Lightweight game feedback: no image assets, respects reduced motion */
+.game-feedback{position:fixed;z-index:1200;left:50%;top:24%;transform:translateX(-50%);pointer-events:none;padding:12px 20px;border-radius:18px;background:var(--c);border:2px solid var(--ok);color:var(--ink);box-shadow:0 12px 30px #0002;font-weight:850;font-size:22px;text-align:center;animation:game-pop .65s ease-out both}
+.game-feedback.bad{border-color:var(--bad)}
+.game-feedback.win{border-color:#e9b938}
+.game-heart-loss{animation:game-heart-pulse .45s ease-out}
+@keyframes game-pop{0%{opacity:0;transform:translate(-50%,14px) scale(.83)}30%{opacity:1;transform:translate(-50%,0) scale(1.06)}75%{opacity:1;transform:translate(-50%,0) scale(1)}100%{opacity:0;transform:translate(-50%,-10px) scale(.99)}}
+@keyframes game-heart-pulse{0%,100%{transform:scale(1)}35%{transform:scale(1.07)}65%{transform:scale(.98)}}
+@media(prefers-reduced-motion:reduce){.game-feedback,.game-heart-loss{animation:none}.game-feedback{opacity:1}}
+</style></head><body><main id="app"></main><dialog id="d"></dialog>
 <script src="config.js"></script>
 <script>
 const PH=[{n:"I’m hungry and sad",c:"#8a909c"},{n:"I want to smile but I can’t",c:"#f08a24"},{n:"I’m almost the best",c:"#2f80ed"},{n:"I’m your Boss",c:"#8b5cf6"},{n:"God",c:"#e0a800"}];
@@ -488,20 +497,30 @@ function drawG(){
     $("app").innerHTML=`<div class="box" style="text-align:center"><div style="font-size:80px">${t[0]}</div><h2>${t[1]}</h2><div class="pt" style="--pc:#4f6df5">${s.score} pts</div><p>${esc(s.title)} · ${DIF[s.diff][1]}</p><button class="btn" onclick="leave()">Volver</button></div>`;return}
   if(s.paused){
     dl=Date.now()+s.pause_left*1000;
-    $("app").innerHTML=`<div class="box" style="filter:blur(6px);pointer-events:none"><b>${esc(s.title)}</b><div style="font-size:26px;margin:8px 0">${"❤️".repeat(s.lives)}${"🤍".repeat(s.lives_max-s.lives)}</div><div class="bar"><i style="--pc:#4f6df5;width:${s.idx/s.total*100}%"></i></div><h2>●●●●● ●●●●●●●</h2><div class="bar" style="height:44px"></div></div>
+    $("app").innerHTML=`<div class="box" style="filter:blur(6px);pointer-events:none"><b>${esc(s.title)}</b><div class="game-hearts" style="font-size:26px;margin:8px 0">${"❤️".repeat(s.lives)}${"🤍".repeat(s.lives_max-s.lives)}</div><div class="bar"><i style="--pc:#4f6df5;width:${s.idx/s.total*100}%"></i></div><h2>●●●●● ●●●●●●●</h2><div class="bar" style="height:44px"></div></div>
     <div class="pzo"><div class="box" style="text-align:center;max-width:340px"><div style="font-size:70px">⏸</div><h2>En pausa</h2><p>La pregunta está oculta.<br>Pausa disponible: <b id="tm"></b></p><button class="btn ok" onclick="pz('game_resume')">▶ REANUDAR</button></div></div>`;
     const f2=()=>{const r=Math.max(0,Math.round((dl-Date.now())/1000));$("tm").textContent=r+" s";if(r<=0){clearInterval(tick);rpc("game_state",{t:tok,p_gid:s.id}).then(x=>{G=x;drawG()}).catch(()=>{})}};
     f2();tick=setInterval(f2,1000);return}
   dl=Date.now()+s.secs*1000;
   $("app").innerHTML=`<div class="box"><div class="row" style="justify-content:space-between"><b>${esc(s.title)}</b><span id="tm"></span></div>
-  <div style="font-size:26px;margin:8px 0">${"❤️".repeat(s.lives)}${"🤍".repeat(s.lives_max-s.lives)}</div>
+  <div class="game-hearts" style="font-size:26px;margin:8px 0">${"❤️".repeat(s.lives)}${"🤍".repeat(s.lives_max-s.lives)}</div>
   <div class="bar"><i style="--pc:#4f6df5;width:${s.idx/s.total*100}%"></i></div>${body(s,m)}
   <div class="row" style="margin-top:10px"><button class="btn g" onclick="restartG()" ${s.restarts_left<1?"disabled":""}>REINICIAR · RESTARTS LEFT: ${s.restarts_left}/5</button>${s.can_pause&&s.pause_left>0?`<button class="btn g" onclick="pz('game_pause')">⏸ PAUSA</button>`:""}<button class="btn g" onclick="leave()">Salir</button></div></div>`;
   const f=()=>{const r=Math.max(0,Math.round((dl-Date.now())/1000));$("tm").textContent="⏱ "+Math.floor(r/60)+":"+String(r%60).padStart(2,"0");
     if(r<=0){clearInterval(tick);rpc("game_state",{t:tok,p_gid:s.id}).then(x=>{G=x;drawG()}).catch(()=>{})}};
   f();tick=setInterval(f,1000);const ga=$("ga");ga&&ga.focus();
 }
-async function send(){const v=$("ga").value;if(!v.trim())return;try{const r=await rpc("game_answer",{t:tok,p_gid:G.id,p_ans:v});G=r.state;msg=r.ok?"":"❌ Intenta otra vez";drawG()}catch(e){msg="Error de conexión"}}
+let gameFeedbackTimer=null;
+function gameFeedback(ok,oldLives,newLives,finished=false){
+ const prev=document.querySelector(".game-feedback");if(prev)prev.remove();
+ clearTimeout(gameFeedbackTimer);
+ const el=document.createElement("div");el.className="game-feedback "+(ok?"good":"bad");el.setAttribute("role","status");
+ el.textContent=ok?(finished?"🏆 ¡Actividad completada!":"✨ ¡Correcto! +1 acierto"):(newLives<oldLives?"💔 -1 corazón":"❌ Inténtalo otra vez");
+ document.body.appendChild(el);
+ const hearts=document.querySelector(".game-hearts");if(newLives<oldLives&&hearts)hearts.classList.add("game-heart-loss");
+ gameFeedbackTimer=setTimeout(()=>el.remove(),850);
+}
+async function send(){const v=$("ga").value;if(!v.trim())return;try{const oldLives=G.lives;const r=await rpc("game_answer",{t:tok,p_gid:G.id,p_ans:v});G=r.state;msg=r.ok?"":"❌ Intenta otra vez";drawG();gameFeedback(r.ok,oldLives,G.lives,G.status==="done")}catch(e){msg="Error de conexión"}}
 async function restartG(){if(!confirm("¿Reiniciar la actividad? Usarás 1 reinicio y no gastarás intentos."))return;try{G=await rpc("game_restart",{t:tok,p_gid:G.id});SL=null;drawG()}catch(e){alert("No se pudo reiniciar")}}
 function leave(){playing=false;clearInterval(tick);clearInterval(timer);timer=setInterval(stu,8000);stu()}
 
@@ -556,7 +575,7 @@ function body(s,m){
   <div class="err" style="text-align:center">${s.wrong?"Fallos: "+s.wrong.toUpperCase()+" ":""}${m}</div>
   <div class="kb">${"abcdefghijklmnopqrstuvwxyz".split("").map(c=>`<button class="k ${s.wrong&&s.wrong.includes(c)?"x":""}" ${used.has(c)?"disabled":""} onclick="guess('${c}')">${c.toUpperCase()}</button>`).join("")}</div>`;
 }
-async function guess(c){try{const r=await rpc("game_guess",{t:tok,p_gid:G.id,p_letter:c});G=r.state;msg=r.ok?"":"❌ Fallaste";drawG()}catch(e){msg="Error de conexión"}}
+async function guess(c){try{const oldLives=G.lives;const r=await rpc("game_guess",{t:tok,p_gid:G.id,p_letter:c});G=r.state;msg=r.ok?"":"❌ Fallaste";drawG();gameFeedback(r.ok,oldLives,G.lives,G.status==="done")}catch(e){msg="Error de conexión"}}
 document.addEventListener("keydown",e=>{if(playing&&G&&G.kind==="hangman"&&G.status==="active"&&!G.paused&&/^[a-z]$/i.test(e.key)&&!e.ctrlKey&&!e.metaKey&&!$("d").open&&!(G.used||"").includes(e.key.toLowerCase()))guess(e.key.toLowerCase())});
 
 function hang(s){
