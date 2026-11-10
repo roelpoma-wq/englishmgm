@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ENGLISH MGM</title>
+<style>
+:root{--bg:#f4f6fb;--c:#fff;--ink:#1d2433;--mut:#6b7488;--ln:#e3e7f0;--pri:#4f6df5;--ok:#1fa971;--bad:#e5484d}
+@media(prefers-color-scheme:dark){:root{--bg:#12151d;--c:#1c212e;--ink:#eef1f8;--mut:#98a2b8;--ln:#2b3244;--pri:#7f95ff}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px system-ui,sans-serif}
+main{max-width:860px;margin:auto;padding:14px 12px 40px}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+input,textarea,select{width:100%;font:inherit;padding:11px;border-radius:10px;border:1px solid var(--ln);background:var(--bg);color:var(--ink);margin:4px 0 10px}
+.box{background:var(--c);border:1px solid var(--ln);border-radius:18px;padding:16px;margin:10px 0}
+.btn{padding:12px 16px;border-radius:12px;background:var(--pri);color:#fff;font-weight:700}
+.btn.g{background:var(--bg);color:var(--ink);border:1px solid var(--ln)}.btn.ok{background:var(--ok)}.btn.bad{background:var(--bad)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.card{--pc:#8a909c;width:100%;text-align:center;padding:12px 6px;border-radius:16px;background:color-mix(in srgb,var(--pc) 13%,var(--c));border:2px solid color-mix(in srgb,var(--pc) 50%,var(--c))}
+.av{font-size:38px;width:68px;height:68px;border-radius:50%;display:grid;place-items:center;margin:0 auto 6px;background:color-mix(in srgb,var(--pc) 25%,var(--c))}
+.p0 .av{filter:grayscale(1)}
+.pt{font-size:28px;font-weight:800;color:var(--pc)}
+.bar{height:10px;background:var(--ln);border-radius:9px;overflow:hidden}.bar i{display:block;height:100%;background:var(--pc)}
+.err{color:var(--bad);min-height:20px}
+dialog{max-height:90vh;overflow:auto;border:0;border-radius:18px;padding:16px;width:min(92vw,440px);background:var(--c);color:var(--ink)}
+table{width:100%;border-collapse:collapse;font-size:14px}td,th{padding:5px;border-bottom:1px solid var(--ln);text-align:left}
+.pzo{position:fixed;inset:0;display:grid;place-items:center;padding:16px;background:rgba(10,14,25,.35);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);z-index:10}
+.mg{display:grid;grid-template-columns:1fr 1fr;gap:10px}.mt{display:block;width:100%;padding:12px 8px;margin-bottom:8px;border-radius:12px;border:2px solid var(--ln);background:var(--bg);color:var(--ink);font-weight:600;word-break:break-word}.mt.on{border-color:var(--pri);background:color-mix(in srgb,var(--pri) 22%,var(--c))}
+.kb{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}.k{padding:10px 0;border-radius:10px;background:var(--bg);border:1px solid var(--ln);font-weight:700}.k:disabled{opacity:.3}.k.x{background:#e5484d44}
+.chip{padding:8px 14px;border-radius:99px;border:1px solid var(--ln);background:var(--c);font-weight:600}.chip.on{background:var(--pri);color:#fff}
+</style></head><body><main id="app"></main><dialog id="d"></dialog>
+<script src="config.js"></script>
+<script>
+const PH=[{n:"I’m hungry and sad",c:"#8a909c"},{n:"I want to smile but I can’t",c:"#f08a24"},{n:"I’m almost the best",c:"#2f80ed"},{n:"I’m your Boss",c:"#8b5cf6"},{n:"God",c:"#e0a800"}];
+const AVT={F:[["🙍‍♀️","🤦‍♀️"],["🙎‍♀️","🤷‍♀️"],["🙋‍♀️","💁‍♀️"],["👩‍💼","🦸‍♀️"],["🧙‍♀️","👸"]],M:[["🙍‍♂️","🤦‍♂️"],["🙎‍♂️","🤷‍♂️"],["🙋‍♂️","💁‍♂️"],["👨‍💼","🦸‍♂️"],["🧙‍♂️","🤴"]]};
+const ph=p=>p<=20?0:p<=40?1:p<=66?2:p<=90?3:4;
+const av=(g,p,k)=>{const a=AVT[g==="M"?"M":"F"][ph(p)];return a[[...k].reduce((x,c)=>x+c.charCodeAt(0),0)%a.length]};
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+let tok=sessionStorage.getItem("t"),role=sessionStorage.getItem("r"),D=[],cur=null,sel=null,timer=null,PL=[],playing=false,G=null,tick=null,dl=0,msg="";
+async function rpc(fn,a){
+  const r=await fetch(SB_URL+"/rest/v1/rpc/"+fn,{method:"POST",headers:{apikey:SB_KEY,"Content-Type":"application/json"},body:JSON.stringify(a||{})});
+  const j=await r.json().catch(()=>null);
+  if(!r.ok)throw new Error(j&&j.message||"error");return j;
+}
+const dlg=h=>{$("d").innerHTML=h;if(!$("d").open)$("d").showModal()};
+const shut=()=>$("d").close();
+async function act(f){try{await f()}catch(e){alert("No se pudo: "+e.message);if(e.message==="auth")out()}}
+
+function login(r="student"){
+  role=r;
+  $("app").innerHTML=`<div class="box"><h1>⭐ ENGLISH MGM</h1><div class="row"><button class="chip ${r==="student"?"on":""}" onclick="login('student')">Estudiante</button><button class="chip ${r==="teacher"?"on":""}" onclick="login('teacher')">Profesor</button></div><br>
+  <label>Usuario</label><input id="u" autocapitalize="none" autocomplete="username">
+  <label>${r==="student"?"Clave (5 números)":"Contraseña"}</label><input id="s" type="password" ${r==="student"?'inputmode="numeric" maxlength="5"':""}>
+  <div class="err" id="e"></div><button class="btn" style="width:100%" onclick="doLogin()">Entrar</button></div>`;
+}
+async function doLogin(){
+  $("e").textContent="";
+  try{
+    const r=await rpc("app_login",{p_role:role,p_user:$("u").value,p_secret:$("s").value});
+    if(r.error){$("e").textContent=r.error==="locked"?"Demasiados intentos. Espera 15 minutos.":"Usuario o clave incorrectos.";return}
+    tok=r.token;sessionStorage.setItem("t",tok);sessionStorage.setItem("r",role);go();
+  }catch(e){$("e").textContent="Sin conexión con el servidor."}
+}
+function go(){role==="teacher"?tea():(stu(),timer=setInterval(stu,8000))}
+function out(){
+  clearInterval(timer);if(tok)rpc("app_logout",{t:tok}).catch(()=>{});
+  sessionStorage.clear();tok=null;login();
+}
+
+async function stu(){
+  if(playing)return;
+  try{
+    const m=await rpc("student_me",{t:tok});if(!m)return out();
+    let A=[];try{A=await rpc("student_activities",{t:tok})}catch(e){}
+    if(playing)return;
+    const p=ph(m.points),P=PH[p];
+    $("app").innerHTML=`<div class="box card p${p}" style="--pc:${P.c}"><div class="av" style="font-size:70px;width:120px;height:120px">${av(m.gender,m.points,m.name)}</div>
+    <h2>${esc(m.name)}</h2><div class="pt">${m.points} pts</div><p><b style="color:${P.c}">${P.n}</b></p>
+    <div class="bar"><i style="width:${Math.min(m.points,100)}%"></i></div><p>⭐ ${m.stars} · ${esc(m.room)}</p></div>
+    ${A.length?actsHtml(A):'<div class="box">🎮 Aún no hay actividades.</div>'}<button class="btn g" onclick="out()">Salir</button>`;
+  }catch(e){}
+}
+
+async function tea(){
+  try{D=await rpc("teacher_data",{t:tok})}catch(e){return out()}
+  if(!D.some(r=>r.id===cur))cur=D[0]?D[0].id:null;drawT();
+}
+function drawT(){
+  const r=D.find(x=>x.id===cur);
+  let h=`<div class="row" style="justify-content:space-between"><b>👩‍🏫 Panel del profesor</b><span><button class="btn g" onclick="actsT()">🎯 Actividades</button> <button class="btn g" onclick="out()">Salir</button></span></div>
+  <div class="row" style="margin:10px 0;overflow-x:auto">`+D.map(x=>`<button class="chip ${x.id===cur?"on":""}" onclick="cur='${x.id}';drawT()">${esc(x.name)}</button>`).join("")+`<button class="chip" onclick="addRoom()">+ Salón</button></div>`;
+  if(r){
+    h+=`<div class="row" style="margin-bottom:10px"><button class="btn g" onclick="addList()">📋 Agregar lista</button><button class="btn g" onclick="resetPins()">🔑 Nuevas claves</button><button class="btn g" onclick="renRoom()">✏️ Salón</button><button class="btn g" onclick="delRoom()">🗑 Salón</button></div><div class="grid">`+
+    r.students.map(s=>{const p=ph(s.points),P=PH[p];return `<button class="card p${p}" style="--pc:${P.c}" onclick="sheet('${s.id}')"><div class="av">${av(s.gender,s.points,s.id)}</div><b>${esc(s.name)}</b><div class="pt">${s.points}</div><small>${P.n}${s.stars?" · ⭐"+s.stars:""}</small><br><small>${esc(s.username)}</small></button>`}).join("")+`</div>`;
+  }else h+=`<div class="box">Crea tu primer salón con «+ Salón».</div>`;
+  $("app").innerHTML=h;
+}
+const cs=()=>D.find(r=>r.id===cur);
+function addRoom(){const n=prompt("Nombre del salón (ej. 3ro A)");if(n&&n.trim())act(async()=>{await rpc("teacher_add_room",{t:tok,n});await tea()})}
+function delRoom(){if(confirm("¿Eliminar el salón y todos sus estudiantes?"))act(async()=>{await rpc("teacher_del_room",{t:tok,rid:cur});await tea()})}
+function addList(){dlg(`<h3>Agregar lista</h3><label>Un nombre por línea, terminando en F (chica) o M (chico). Ej: Ana F</label><textarea id="ta" rows="8"></textarea><div class="row"><button class="btn g" onclick="shut()">Cancelar</button><button class="btn ok" onclick="saveList()">Agregar</button></div>`)}
+function saveList(){
+  const lst=$("ta").value.split("\n").map(l=>l.trim()).filter(Boolean).map(l=>{const m=l.match(/^(.+?)[\s,;-]+([FfMm])$/);return m?{name:m[1].trim(),g:m[2].toUpperCase()}:{name:l,g:"F"}});
+  if(lst.length)act(async()=>{const o=await rpc("teacher_add_students",{t:tok,rid:cur,lst});await tea();pins(o)});
+}
+function resetPins(){if(confirm("Se generarán claves nuevas para TODO el salón. Las anteriores dejarán de funcionar. ¿Continuar?"))act(async()=>{pins(await rpc("teacher_reset_pins",{t:tok,rid:cur}))})}
+function pins(o){
+  PL=o;dlg(`<h3>🔑 Claves generadas</h3><p><b>Guárdalas ahora:</b> no se podrán volver a ver.</p><table><tr><th>Nombre</th><th>Usuario</th><th>Clave</th></tr>${o.map(x=>`<tr><td>${esc(x.name)}</td><td>${esc(x.username)}</td><td><b>${x.pin}</b></td></tr>`).join("")}</table><br><div class="row"><button class="btn ok" onclick="csv()">⬇️ Descargar Excel (CSV)</button><button class="btn g" onclick="shut()">Cerrar</button></div>`);
+}
+function csv(){
+  const t="\ufeffNombre,Usuario,Clave\n"+PL.map(x=>`"${x.name.replace(/"/g,'""')}",${x.username},${x.pin}`).join("\n");
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([t],{type:"text/csv"}));a.download="claves.csv";a.click();
+}
+function sheet(id){
+  sel=id;const s=cs().students.find(x=>x.id===id);if(!s)return shut();
+  dlg(`<h3>${av(s.gender,s.points,s.id)} ${esc(s.name)} · ${s.points} pts · ⭐${s.stars}</h3>
+  <div class="row"><button class="btn bad" onclick="aw(-3)">−3</button><button class="btn bad" onclick="aw(-1)">−1</button><button class="btn ok" onclick="aw(3)">+3</button><button class="btn ok" onclick="aw(5)">+5</button></div><br>
+  <button class="btn" style="width:100%;background:#f5b400;color:#3a2b00" onclick="aw(0,true)">⭐ Gran estrella (+8)</button><br><br>
+  <div class="row"><button class="btn g" onclick="shut()">Cerrar</button><button class="btn g" onclick="editSt()">✏️ Editar</button><button class="btn g" onclick="delSt()">🗑 Eliminar</button></div>`);
+}
+function aw(d,star=false){act(async()=>{await rpc("teacher_award",{t:tok,sid:sel,delta:d,star});await tea();sheet(sel)})}
+function delSt(){if(confirm("¿Eliminar a este estudiante?"))act(async()=>{await rpc("teacher_del_student",{t:tok,sid:sel});shut();await tea()})}
+
+const DIF={kitty:["🐱","YOU ARE A KITTY"],guts:["💪","YOU HAVE GUTS"],boss:["👑","YOU ARE THE BOSS"]};
+function actsHtml(A){return A.map(a=>`<div class="box"><b>${KI[a.kind]||"🌐"} ${esc(a.title)}</b> <small>· ${a.n} ${a.kind==="hangman"?"palabras":a.kind==="matching"?"parejas":"preguntas"} · ${a.minutes} min</small><div class="row" style="margin-top:8px">`+Object.keys(DIF).map(k=>{const x=a.d[k];return `<button class="btn g" ${x.left<1&&!x.pending?"disabled":""} onclick="askPin('${a.id}','${k}')">${DIF[k][0]} ${DIF[k][1]}<br><small>${x.pending?"▶ continuar":"intentos "+x.left+"/"+x.max}${x.best!=null?" · mejor "+x.best:""}</small></button>`}).join("")+`</div></div>`).join("")}
+function askPin(aid,k){dlg(`<h3>Confirma tu clave</h3><input id="pp" type="password" inputmode="numeric" maxlength="5" placeholder="5 números"><div class="err" id="pe"></div><div class="row"><button class="btn g" onclick="shut()">Cancelar</button><button class="btn ok" onclick="startG('${aid}','${k}')">Empezar</button></div>`)}
+async function startG(aid,k){
+  try{const r=await rpc("game_start",{t:tok,p_aid:aid,p_diff:k,p_pin:$("pp").value});
+    if(r.error){$("pe").textContent={pin:"Clave incorrecta (no gasta intentos).",locked:"Demasiados intentos. Espera 15 minutos.",noattempts:"No te quedan intentos."}[r.error];return}
+    shut();playing=true;clearInterval(timer);G=r;msg="";SL=null;drawG();
+  }catch(e){$("pe").textContent="No se pudo iniciar."}
+}
+function drawG(){
+  clearInterval(tick);const s=G,m=msg;msg="";
+  if(s.status!=="active"){
+    const t={done:["🎉","¡Completada!"],lost:["💔","Te quedaste sin vidas"],timeout:["⏰","Se acabó el tiempo"]}[s.status];
+    $("app").innerHTML=`<div class="box" style="text-align:center"><div style="font-size:80px">${t[0]}</div><h2>${t[1]}</h2><div class="pt" style="--pc:#4f6df5">${s.score} pts</div><p>${esc(s.title)} · ${DIF[s.diff][1]}</p><button class="btn" onclick="leave()">Volver</button></div>`;return}
+  if(s.paused){
+    dl=Date.now()+s.pause_left*1000;
+    $("app").innerHTML=`<div class="box" style="filter:blur(6px);pointer-events:none"><b>${esc(s.title)}</b><div style="font-size:26px;margin:8px 0">${"❤️".repeat(s.lives)}${"🤍".repeat(s.lives_max-s.lives)}</div><div class="bar"><i style="--pc:#4f6df5;width:${s.idx/s.total*100}%"></i></div><h2>●●●●● ●●●●●●●</h2><div class="bar" style="height:44px"></div></div>
+    <div class="pzo"><div class="box" style="text-align:center;max-width:340px"><div style="font-size:70px">⏸</div><h2>En pausa</h2><p>La pregunta está oculta.<br>Pausa disponible: <b id="tm"></b></p><button class="btn ok" onclick="pz('game_resume')">▶ REANUDAR</button></div></div>`;
+    const f2=()=>{const r=Math.max(0,Math.round((dl-Date.now())/1000));$("tm").textContent=r+" s";if(r<=0){clearInterval(tick);rpc("game_state",{t:tok,p_gid:s.id}).then(x=>{G=x;drawG()}).catch(()=>{})}};
+    f2();tick=setInterval(f2,1000);return}
+  dl=Date.now()+s.secs*1000;
+  $("app").innerHTML=`<div class="box"><div class="row" style="justify-content:space-between"><b>${esc(s.title)}</b><span id="tm"></span></div>
+  <div style="font-size:26px;margin:8px 0">${"❤️".repeat(s.lives)}${"🤍".repeat(s.lives_max-s.lives)}</div>
+  <div class="bar"><i style="--pc:#4f6df5;width:${s.idx/s.total*100}%"></i></div>${body(s,m)}
+  <div class="row" style="margin-top:10px"><button class="btn g" onclick="restartG()" ${s.restarts_left<1?"disabled":""}>REINICIAR · RESTARTS LEFT: ${s.restarts_left}/5</button>${s.can_pause&&s.pause_left>0?`<button class="btn g" onclick="pz('game_pause')">⏸ PAUSA</button>`:""}<button class="btn g" onclick="leave()">Salir</button></div></div>`;
+  const f=()=>{const r=Math.max(0,Math.round((dl-Date.now())/1000));$("tm").textContent="⏱ "+Math.floor(r/60)+":"+String(r%60).padStart(2,"0");
+    if(r<=0){clearInterval(tick);rpc("game_state",{t:tok,p_gid:s.id}).then(x=>{G=x;drawG()}).catch(()=>{})}};
+  f();tick=setInterval(f,1000);const ga=$("ga");ga&&ga.focus();
+}
+async function send(){const v=$("ga").value;if(!v.trim())return;try{const r=await rpc("game_answer",{t:tok,p_gid:G.id,p_ans:v});G=r.state;msg=r.ok?"":"❌ Intenta otra vez";drawG()}catch(e){msg="Error de conexión"}}
+async function restartG(){if(!confirm("¿Reiniciar la actividad? Usarás 1 reinicio y no gastarás intentos."))return;try{G=await rpc("game_restart",{t:tok,p_gid:G.id});SL=null;drawG()}catch(e){alert("No se pudo reiniciar")}}
+function leave(){playing=false;clearInterval(tick);clearInterval(timer);timer=setInterval(stu,8000);stu()}
+
+function actsT(){act(async()=>{const L=await rpc("teacher_activities",{t:tok});AL=L;
+  dlg(`<h3>🎯 Actividades</h3>`+(L.length?L.map(a=>`<div class="row" style="justify-content:space-between;margin:6px 0"><span>${KI[a.kind]||"🌐"} ${esc(a.title)} <small>(${a.n} · ${a.minutes} min)</small></span><span><button class="btn g" onclick="editAct('${a.id}')">✏️</button> <button class="btn g" onclick="cfgA('${a.id}')">⚙️</button> <button class="btn g" onclick="resA('${a.id}')">📊</button> <button class="btn g" onclick="delA('${a.id}')">🗑</button></span></div>`).join(""):"<p>Aún no hay actividades.</p>")+`<div class="row" style="margin-top:10px"><button class="btn g" onclick="shut()">Cerrar</button><button class="btn ok" onclick="newAct()">➕ Nueva actividad</button></div>`)})}
+let ED=null;
+function newAct(){ED={id:null,title:"",minutes:5,kind:"translate",qs:[{q:"",a:"",img:null}]};edr()}
+function editAct(id){act(async()=>{const x=await rpc("teacher_get_activity",{t:tok,aid:id});ED={id,title:x.title,minutes:x.minutes,kind:x.kind,qs:x.questions.map(z=>({q:z.q,a:z.a.join(" | "),img:z.img||null}))};edr()})}
+function edr(){
+  const h=ED.kind==="hangman",mt=ED.kind==="matching",sc=$("d").scrollTop;
+  dlg(`<h3>${ED.id?"✏️ Editar":"➕ Nueva"} actividad</h3><label>Título</label><input value="${esc(ED.title)}" oninput="ED.title=this.value">
+  ${ED.id?"":`<label>Tipo</label><select onchange="ED.kind=this.value;edr()"><option value="translate" ${!h?"selected":""}>🌐 Translate</option><option value="hangman" ${h?"selected":""}>🔤 Hang Man</option><option value="matching" ${mt?"selected":""}>🔗 Matching</option></select><label>Minutos</label><input type="number" min="1" value="${ED.minutes}" oninput="ED.minutes=+this.value">`}
+  ${ED.qs.map((x,i)=>`<div class="box"><b>${i+1}</b><br><label>${h?"Pista":mt?"Elemento (izquierda)":"Pregunta"}</label><input value="${esc(x.q)}" oninput="ED.qs[${i}].q=this.value"><label>${h?"Palabra (solo letras)":mt?"Su pareja correcta (derecha)":"Respuesta(s) correcta(s), separadas por |"}</label><input value="${esc(x.a)}" oninput="ED.qs[${i}].a=this.value">
+  <div class="row">${mt?"":`${x.img?`<img src="${x.img}" style="height:60px;border-radius:8px">`:""}<label class="btn g" style="margin:0;cursor:pointer">📷 ${x.img?"Cambiar":"Imagen"}<input type="file" accept="image/*" hidden onchange="pickImg(${i},this)"></label>${x.img?`<button class="btn g" onclick="ED.qs[${i}].img=null;edr()">Quitar</button>`:""}`}<button class="btn g" onclick="ED.qs.splice(${i},1);if(!ED.qs.length)ED.qs.push({q:'',a:'',img:null});edr()">🗑</button></div></div>`).join("")}
+  <button class="btn g" onclick="ED.qs.push({q:'',a:'',img:null});edr()">+ Pregunta</button><br><br>
+  <div class="row"><button class="btn g" onclick="actsT()">Volver</button><button class="btn ok" onclick="saveAct()">Guardar</button></div>`);
+  $("d").scrollTop=sc;
+}
+function pickImg(i,inp){const f=inp.files[0];if(!f)return;const r=new FileReader();
+  r.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,380/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);
+    const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0,c.width,c.height);ED.qs[i].img=c.toDataURL("image/jpeg",0.7);edr()};im.src=r.result};r.readAsDataURL(f)}
+function saveAct(){
+  const qs=ED.qs.map(x=>({q:x.q.trim(),a:x.a.split("|").map(z=>z.trim()).filter(Boolean),...(x.img?{img:x.img}:{})}));
+  if(!ED.title.trim()||qs.some(x=>!x.q||!x.a.length))return alert("Completa el título y cada pregunta con su respuesta.");
+  act(async()=>{ED.id?await rpc("teacher_update_activity",{t:tok,aid:ED.id,p_title:ED.title.trim(),qs}):await rpc("teacher_new_activity",{t:tok,p_title:ED.title.trim(),p_min:Math.max(1,ED.minutes||5),qs,p_kind:ED.kind});actsT()})}
+const IMG={},PEND={};
+function imgBox(s){
+  if(!s.has_img)return"";const k=s.id+":"+s.idx,pic=v=>`<img src="${v}" style="max-width:100%;max-height:220px;border-radius:12px">`;
+  if(IMG[k])return `<div id="qi" style="text-align:center">${pic(IMG[k])}</div>`;
+  if(!PEND[k]){PEND[k]=1;rpc("game_img",{t:tok,p_gid:s.id}).then(v=>{if(v){IMG[k]=v;const e=$("qi");if(e)e.innerHTML=pic(v)}}).catch(()=>{delete PEND[k]})}
+  return `<div id="qi" style="text-align:center;min-height:40px">⏳</div>`;
+}
+function delA(id){if(confirm("¿Eliminar la actividad y sus resultados?"))act(async()=>{await rpc("teacher_del_activity",{t:tok,aid:id});actsT()})}
+function resA(id){act(async()=>{const L=await rpc("teacher_results",{t:tok,aid:id});
+  dlg(`<h3>📊 Mejores resultados</h3>`+(L.length?`<table><tr><th>#</th><th>Estudiante</th><th>Salón</th><th>Pts</th><th>Seg</th></tr>${L.map((x,i)=>`<tr><td>${i+1}</td><td>${esc(x.name)}</td><td>${esc(x.room)}</td><td><b>${x.score}</b></td><td>${x.secs}</td></tr>`).join("")}</table>`:"<p>Sin resultados todavía.</p>")+`<br><button class="btn g" onclick="actsT()">Volver</button>`)})}
+
+let AL=[];
+async function pz(fn){try{G=await rpc(fn,{t:tok,p_gid:G.id});drawG()}catch(e){alert("No se pudo")}}
+function renRoom(){const n=prompt("Nuevo nombre del salón",cs().name);if(n&&n.trim())act(async()=>{await rpc("teacher_rename_room",{t:tok,rid:cur,n});await tea()})}
+function editSt(){const x=cs().students.find(z=>z.id===sel);
+  dlg(`<h3>Editar estudiante</h3><label>Nombre</label><input id="en" value="${esc(x.name)}" maxlength="40"><label>Sexo (define su avatar)</label><select id="eg"><option value="F" ${x.gender==="F"?"selected":""}>👧 Chica</option><option value="M" ${x.gender==="M"?"selected":""}>👦 Chico</option></select><div class="row"><button class="btn g" onclick="sheet(sel)">Volver</button><button class="btn ok" onclick="saveSt()">Guardar</button></div>`)}
+function saveSt(){const n=$("en").value.trim();if(!n)return;act(async()=>{await rpc("teacher_update_student",{t:tok,sid:sel,p_name:n,p_g:$("eg").value});await tea();sheet(sel)})}
+function cfgA(id){const a=AL.find(x=>x.id===id);
+  dlg(`<h3>⚙️ ${esc(a.title)}</h3><label>Minutos</label><input id="c0" type="number" min="1" value="${a.minutes}"><label>Puntos máximos 🐱 KITTY</label><input id="c1" type="number" min="0" value="${a.pts.kitty}"><label>Puntos máximos 💪 GUTS</label><input id="c2" type="number" min="0" value="${a.pts.guts}"><label>Puntos máximos 👑 BOSS</label><input id="c3" type="number" min="0" value="${a.pts.boss}"><label>Pausa total permitida (segundos, 0 = sin pausa)</label><input id="c4" type="number" min="0" value="${a.pause}"><div class="row"><button class="btn g" onclick="actsT()">Volver</button><button class="btn ok" onclick="saveCfg('${id}')">Guardar</button></div>`)}
+function saveCfg(id){const n=i=>parseInt($("c"+i).value)||0;act(async()=>{await rpc("teacher_set_activity",{t:tok,aid:id,p_min:Math.max(1,n(0)),p_pts:{kitty:n(1),guts:n(2),boss:n(3)},p_pause:n(4)});actsT()})}
+
+function body(s,m){
+  if(s.kind==="matching")return mtc(s,m);
+  if(s.kind!=="hangman")return `<p>Pregunta ${s.idx+1} de ${s.total}</p><h2>${esc(s.q)}</h2>${imgBox(s)}<input id="ga" autocomplete="off" autocapitalize="none" onkeydown="if(event.key==='Enter')send()"><div class="err">${m}</div><button class="btn" style="width:100%" onclick="send()">Enviar</button>`;
+  const used=new Set((s.used||"").split(""));
+  return `<p>Palabra ${s.idx+1} de ${s.total} · pista:</p><h3>${esc(s.q)}</h3>${imgBox(s)}${hang(s)}<div style="font:700 30px monospace;letter-spacing:6px;white-space:pre-wrap;text-align:center;margin:14px 0">${esc(s.mask||"")}</div>
+  <div class="err" style="text-align:center">${s.wrong?"Fallos: "+s.wrong.toUpperCase()+" ":""}${m}</div>
+  <div class="kb">${"abcdefghijklmnopqrstuvwxyz".split("").map(c=>`<button class="k ${s.wrong&&s.wrong.includes(c)?"x":""}" ${used.has(c)?"disabled":""} onclick="guess('${c}')">${c.toUpperCase()}</button>`).join("")}</div>`;
+}
+async function guess(c){try{const r=await rpc("game_guess",{t:tok,p_gid:G.id,p_letter:c});G=r.state;msg=r.ok?"":"❌ Fallaste";drawG()}catch(e){msg="Error de conexión"}}
+document.addEventListener("keydown",e=>{if(playing&&G&&G.kind==="hangman"&&G.status==="active"&&!G.paused&&/^[a-z]$/i.test(e.key)&&!e.ctrlKey&&!e.metaKey&&!$("d").open&&!(G.used||"").includes(e.key.toLowerCase()))guess(e.key.toLowerCase())});
+
+function hang(s){
+  const n=Math.round((s.lives_max-s.lives)*6/s.lives_max),c=n>=6?"#e5484d":"currentColor";
+  return `<svg viewBox="0 0 120 120" width="150" height="150" style="display:block;margin:6px auto;color:var(--ink)" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 112H75M30 112V10H80V24"/>
+  <g stroke="${c}">${n>0?'<circle cx="80" cy="34" r="10"/>':""}${n>1?'<path d="M80 44V76"/>':""}${n>2?'<path d="M80 52L65 66"/>':""}${n>3?'<path d="M80 52L95 66"/>':""}${n>4?'<path d="M80 76L68 98"/>':""}${n>5?'<path d="M80 76L92 98"/>':""}</g></svg>`;
+}
+
+const KI={translate:"🌐",hangman:"🔤",matching:"🔗"};
+let SL=null;
+function mtc(s,m){
+  const mp={},rj={};(s.used||"").split(",").filter(Boolean).forEach(x=>{const [i,j]=x.split(":");mp[i]=j;rj[j]=i});
+  const col=(arr,side)=>(arr||[]).map((t,k)=>{const pi=side==="l"?(mp[k]!==undefined?k:null):(rj[k]!==undefined?+rj[k]:null);
+    return `<button class="mt ${side==="l"&&SL===k?"on":""}" ${pi!==null?"disabled":""} style="${pi!==null?`background:hsl(${pi*47%360} 60% 80%);color:#222;border-color:transparent`:""}" onclick="pick('${side}',${k})">${esc(t)}</button>`}).join("");
+  return `<p>Une las parejas · ${s.idx}/${s.total}</p><div class="err" style="text-align:center">${m}</div><div class="mg"><div>${col(s.lefts,"l")}</div><div>${col(s.rights,"r")}</div></div>`;
+}
+async function pick(side,k){
+  if(side==="l"){SL=SL===k?null:k;drawG();return}
+  if(SL===null){msg="Primero elige un elemento de la izquierda";drawG();return}
+  const i=SL;SL=null;
+  try{const r=await rpc("game_pair",{t:tok,p_gid:G.id,p_i:i,p_j:k});G=r.state;msg=r.ok?"":"❌ No son pareja";drawG()}catch(e){msg="Error de conexión";drawG()}
+}
+
+tok&&role?go():login();
+</script></body></html>
