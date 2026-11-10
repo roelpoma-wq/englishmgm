@@ -220,7 +220,7 @@ function drawT(){
   <div class="row" style="margin:10px 0;overflow-x:auto">`+D.map(x=>`<button class="chip ${x.id===cur?"on":""}" onclick="cur='${x.id}';drawT()">${esc(x.name)}</button>`).join("")+`<button class="chip" onclick="addRoom()">+ Salón</button></div>`;
   if(r){
     h+=`<div class="row" style="margin-bottom:10px"><button class="btn g" onclick="addList()">📋 Agregar lista</button><button class="btn g" onclick="resetPins()">🔑 Nuevas claves</button><button class="btn g" onclick="renRoom()">✏️ Salón</button><button class="btn g" onclick="delRoom()">🗑 Salón</button></div><div class="grid">`+
-    r.students.map(s=>{const p=ph(s.points),P=PH[p];return `<button class="card p${p}" style="--pc:${P.c}" onclick="sheet('${s.id}')"><div class="av">${av(s.gender,s.points,s.id)}</div><b>${esc(s.name)}</b><div class="pt">${s.points}</div><small>${P.n}${s.stars?" · ⭐"+s.stars:""}</small><br><small>${esc(s.username)}</small></button>`}).join("")+`</div>`;
+    r.students.map(s=>{const p=ph(s.points),P=PH[p];return `<button class="card p${p}" style="--pc:${P.c}" onclick="sheet('${s.id}')"><div class="av">${av(s.gender,s.points,s.id)}</div><b>${esc(s.name)}</b><div class="pt">${s.points}</div><small>${P.n}${s.stars?" · ⭐"+s.stars:""}</small></button>`}).join("")+`</div>`;
   }else h+=`<div class="box">Crea tu primer salón con «+ Salón».</div>`;
   $("app").innerHTML=h;
 }
