@@ -162,6 +162,27 @@ td,th{padding:10px 7px}
 .award-note{font-size:12px;color:var(--mut);margin:0 0 9px}
 .award-actions{margin-top:22px}.award-actions .btn{flex:1}
 .award-controls button:disabled{opacity:.4;cursor:not-allowed}
+
+/* Phase cards v1: lightweight, mobile-first, no 3D engine */
+.phase-card{position:relative;isolation:isolate;overflow:hidden;display:flex;flex-direction:column;align-items:center;gap:5px;min-height:206px;background:linear-gradient(155deg,color-mix(in srgb,var(--pc) 19%,var(--c)),var(--c) 75%);border:2px solid color-mix(in srgb,var(--pc) 55%,var(--c));box-shadow:0 5px 0 color-mix(in srgb,var(--pc) 24%,transparent),0 9px 19px rgba(36,27,74,.07)}
+.phase-card .av{position:relative;flex-shrink:0;background:linear-gradient(145deg,color-mix(in srgb,var(--pc) 40%,white),color-mix(in srgb,var(--pc) 15%,var(--c)));border:2px solid color-mix(in srgb,var(--pc) 60%,white);box-shadow:inset 0 3px 4px rgba(255,255,255,.5),0 5px 0 color-mix(in srgb,var(--pc) 28%,transparent);text-shadow:0 2px 2px rgba(0,0,0,.12)}
+.phase-card.p0 .av{filter:grayscale(1)}
+.phase-card .phase-badge{font-size:12px;line-height:1.25;font-weight:850;color:var(--pc);background:color-mix(in srgb,var(--pc) 12%,var(--c));border:1px solid color-mix(in srgb,var(--pc) 30%,var(--c));border-radius:999px;padding:5px 8px;max-width:100%;overflow-wrap:anywhere}
+.phase-card .student-name{font-size:14px;line-height:1.3;min-height:36px;display:grid;place-items:center}
+.phase-card .pt{font-size:27px;line-height:1.15}
+.phase-card .phase-stars{font-weight:750;font-size:13px}
+.phase-card .phase-progress{width:100%;margin-top:auto;text-align:left}
+.phase-card .phase-progress small{display:block;color:var(--mut);font-size:11px;margin-bottom:5px}
+.phase-card .bar{height:8px}
+.phase-card .phase-progress i{transition:width .3s ease}
+.phase-hero{max-width:560px;margin:12px auto;text-align:center;min-height:0;padding:22px}
+.phase-hero .av{width:112px;height:112px;font-size:67px;margin-bottom:10px}
+.phase-hero .student-name{font-size:clamp(21px,5vw,29px);min-height:0}
+.phase-hero .pt{font-size:38px}
+.phase-hero .phase-progress{margin:12px 0 3px}
+.phase-hero .phase-progress small{font-size:13px}
+@media(max-width:560px){.phase-card{padding:12px 7px;min-height:210px}.phase-card .av{width:64px;height:64px;font-size:37px}.phase-hero .av{width:108px;height:108px;font-size:64px}}
+@media(prefers-reduced-motion:reduce){.phase-card .phase-progress i{transition:none}}
 </style></head><body><main id="app"></main><dialog id="d"></dialog>
 <script src="config.js"></script>
 <script>
@@ -233,9 +254,8 @@ async function stu(){
     let A=[];try{A=await rpc("student_activities",{t:tok})}catch(e){}
     if(playing)return;
     const p=ph(m.points),P=PH[p];
-    $("app").innerHTML=`<div class="box card p${p}" style="--pc:${P.c}"><div class="av" style="font-size:70px;width:120px;height:120px">${av(m.gender,m.points,m.name)}</div>
-    <h2>${esc(m.name)}</h2><div class="pt">${m.points} pts</div><p><b style="color:${P.c}">${P.n}</b></p>
-    <div class="bar"><i style="width:${Math.min(m.points,100)}%"></i></div><p>⭐ ${m.stars} · ${esc(m.room)}</p></div>
+    $("app").innerHTML=`<div class="box card phase-card phase-hero p${p}" style="--pc:${P.c}"><div class="av">${av(m.gender,m.points,m.name)}</div>
+    <h2 class="student-name">${esc(m.name)}</h2><span class="phase-badge">${phaseIcon[p]} ${esc(P.n)}</span><div class="pt">${m.points} <small style="font-size:16px">pts</small></div><div class="phase-stars">⭐ ${m.stars||0} · ${esc(m.room)}</div>${phaseProgress(m.points)}</div>
     ${A.length?actsHtml(A):'<div class="box">🎮 Aún no hay actividades.</div>'}<button class="btn g" onclick="out()">Salir</button>`;
   }catch(e){}
 }
@@ -249,10 +269,12 @@ function drawT(){
   let h=`<header class="teacher-head"><div><span class="teacher-eyebrow">ENGLISH MGM · TEACHER SPACE</span><h1>👩‍🏫 Mi aula interactiva</h1><p>Gestiona tus salones, celebra los logros y crea actividades.</p></div><div class="teacher-head-actions"><button class="btn" onclick="actsT()">🎯 Actividades</button><button class="btn g" onclick="out()">Salir</button></div></header><section class="teacher-stats"><div class="teacher-stat"><span>🏫 Salones</span><strong>${D.length}</strong></div><div class="teacher-stat"><span>🎒 Estudiantes</span><strong>${D.reduce((n,x)=>n+(x.students||[]).length,0)}</strong></div><div class="teacher-stat"><span>⭐ Estrellas</span><strong>${D.reduce((n,x)=>n+(x.students||[]).reduce((v,y)=>v+(Number(y.stars)||0),0),0)}</strong></div></section><div class="row" style="margin:10px 0;overflow-x:auto">`+D.map(x=>`<button class="chip ${x.id===cur?"on":""}" onclick="cur='${x.id}';drawT()">${esc(x.name)}</button>`).join("")+`<button class="chip" onclick="addRoom()">+ Salón</button></div>`;
   if(r){
     h+=`<div class="row" style="margin-bottom:10px"><button class="btn g" onclick="addList()">📋 Agregar lista</button><button class="btn g" onclick="resetPins()">🔑 Nuevas claves</button><button class="btn g" onclick="renRoom()">✏️ Salón</button><button class="btn g" onclick="delRoom()">🗑 Salón</button></div><div class="grid">`+
-    r.students.map(s=>{const p=ph(s.points),P=PH[p];return `<button class="card p${p}" style="--pc:${P.c}" onclick="sheet('${s.id}')"><div class="av">${av(s.gender,s.points,s.id)}</div><b>${esc(s.name)}</b><div class="pt">${s.points}</div><small>${P.n}${s.stars?" · ⭐"+s.stars:""}</small></button>`}).join("")+`</div>`;
+    r.students.map(s=>{const p=ph(s.points),P=PH[p];return `<button class="card phase-card p${p}" style="--pc:${P.c}" onclick="sheet('${s.id}')" aria-label="${esc(s.name)}: ${s.points} puntos, ${s.stars||0} estrellas, fase ${esc(P.n)}"><div class="av">${av(s.gender,s.points,s.id)}</div><span class="phase-badge">${phaseIcon[p]} ${esc(P.n)}</span><b class="student-name">${esc(s.name)}</b><div class="pt">${s.points} <small style="font-size:12px">pts</small></div><span class="phase-stars">⭐ ${s.stars||0}</span>${phaseProgress(s.points)}</button>`}).join("")+`</div>`;
   }else h+=`<div class="box">Crea tu primer salón con «+ Salón».</div>`;
   $("app").innerHTML=h;
 }
+const phaseIcon=["🌧️","🌤️","🚀","👑","🌟"];
+function phaseProgress(points){const p=Math.max(0,Number(points)||0),i=ph(p),next=[21,41,67,91][i];if(!next)return '<div class="phase-progress"><small>🏆 ¡Fase máxima alcanzada!</small><div class="bar"><i style="width:100%"></i></div></div>';const prev=[0,21,41,67][i],pct=Math.max(0,Math.min(100,(p-prev)/(next-prev)*100));return '<div class="phase-progress"><small>🎯 '+(next-p)+' pts para la siguiente fase</small><div class="bar"><i style="width:'+pct.toFixed(1)+'%"></i></div></div>'}
 const cs=()=>D.find(r=>r.id===cur);
 function addRoom(){const n=prompt("Nombre del salón (ej. 3ro A)");if(n&&n.trim())act(async()=>{await rpc("teacher_add_room",{t:tok,n});await tea()})}
 function delRoom(){if(confirm("¿Eliminar el salón y todos sus estudiantes?"))act(async()=>{await rpc("teacher_del_room",{t:tok,rid:cur});await tea()})}
