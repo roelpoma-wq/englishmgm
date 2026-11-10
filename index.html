@@ -132,6 +132,21 @@ td,th{padding:10px 7px}
 @media(max-width:760px){.login-shell{grid-template-columns:1fr;max-width:510px;gap:14px;margin:8px auto}.login-hero{min-height:170px;padding:22px 16px}.login-mascot{font-size:55px}.login-hero-title{font-size:21px;margin-top:4px}.login-hero p,.login-stickers{display:none}.login-bubble{padding:6px 10px;font-size:12px}.bubble-a{top:14%;left:7%}.bubble-b{top:18%;right:7%}.login-panel{padding:24px 20px}.login-eyebrow{margin-top:24px}}
 @media(prefers-reduced-motion:reduce){.login-mascot{animation:none}}
 
+
+/* Fase 2.1: cabecera y métricas de profesor; datos derivados de teacher_data */
+.teacher-head{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px;padding:24px 26px;margin:10px 0 15px;border-radius:26px;background:linear-gradient(125deg,#5438d7,#7b51ec 65%,#b85fdc);color:#fff;box-shadow:0 12px 30px #6545d333}
+.teacher-eyebrow{font-size:11px;letter-spacing:.16em;font-weight:900;opacity:.86}
+.teacher-head h1{font-size:clamp(24px,3vw,35px);margin:7px 0}
+.teacher-head p{margin:0;opacity:.9}
+.teacher-head-actions{display:flex;gap:10px;flex-wrap:wrap}
+.teacher-head-actions .btn{background:#fff;color:#5935c8;box-shadow:none}
+.teacher-head-actions .btn.g{background:#ffffff24;color:#fff;border-color:#ffffff66}
+.teacher-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:20px}
+.teacher-stat{display:flex;flex-direction:column;gap:6px;padding:17px 20px;border-radius:20px;background:var(--c);border:1px solid var(--ln);box-shadow:0 5px 18px #34227a0b}
+.teacher-stat span{color:var(--mut);font-weight:750;font-size:13px}
+.teacher-stat strong{font-size:clamp(24px,3vw,34px);color:var(--pri);line-height:1}
+@media(max-width:560px){.teacher-head{padding:20px 16px}.teacher-head-actions{width:100%}.teacher-head-actions .btn{flex:1}.teacher-stats{gap:7px}.teacher-stat{padding:12px 9px;border-radius:14px}.teacher-stat span{font-size:11px}}
+
 </style></head><body><main id="app"></main><dialog id="d"></dialog>
 <script src="config.js"></script>
 <script>
@@ -216,7 +231,7 @@ async function tea(){
 }
 function drawT(){
   const r=D.find(x=>x.id===cur);
-  let h=`<div class="row" style="justify-content:space-between"><b>👩‍🏫 Panel del profesor</b><span><button class="btn g" onclick="actsT()">🎯 Actividades</button> <button class="btn g" onclick="out()">Salir</button></span></div>
+  let h=`<header class="teacher-head"><div><span class="teacher-eyebrow">ENGLISH MGM · TEACHER SPACE</span><h1>👩‍🏫 Mi aula interactiva</h1><p>Gestiona tus salones, celebra los logros y crea actividades.</p></div><div class="teacher-head-actions"><button class="btn" onclick="actsT()">🎯 Actividades</button><button class="btn g" onclick="out()">Salir</button></div></header><section class="teacher-stats"><div class="teacher-stat"><span>🏫 Salones</span><strong>${D.length}</strong></div><div class="teacher-stat"><span>🎒 Estudiantes</span><strong>${D.reduce((n,x)=>n+(x.students||[]).length,0)}</strong></div><div class="teacher-stat"><span>⭐ Estrellas</span><strong>${D.reduce((n,x)=>n+(x.students||[]).reduce((v,y)=>v+(Number(y.stars)||0),0),0)}</strong></div></section>`
   <div class="row" style="margin:10px 0;overflow-x:auto">`+D.map(x=>`<button class="chip ${x.id===cur?"on":""}" onclick="cur='${x.id}';drawT()">${esc(x.name)}</button>`).join("")+`<button class="chip" onclick="addRoom()">+ Salón</button></div>`;
   if(r){
     h+=`<div class="row" style="margin-bottom:10px"><button class="btn g" onclick="addList()">📋 Agregar lista</button><button class="btn g" onclick="resetPins()">🔑 Nuevas claves</button><button class="btn g" onclick="renRoom()">✏️ Salón</button><button class="btn g" onclick="delRoom()">🗑 Salón</button></div><div class="grid">`+
