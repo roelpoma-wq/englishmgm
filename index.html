@@ -100,6 +100,38 @@ td,th{padding:10px 7px}
   *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}
 }
 
+
+/* Fase 2: bienvenida y acceso Playful Neon. Lógica de login original intacta. */
+.login-shell{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,1fr);gap:22px;align-items:stretch;min-height:min(690px,calc(100vh - 100px));margin:clamp(10px,3vw,35px) auto;max-width:1040px}
+.login-hero{position:relative;isolation:isolate;overflow:hidden;border-radius:30px;background:linear-gradient(145deg,#5634d8 0%,#8d4deb 55%,#d45fc9 100%);padding:45px 30px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:white;box-shadow:0 18px 50px rgba(96,64,206,.24)}
+.login-hero:before,.login-hero:after{content:"";position:absolute;border-radius:50%;pointer-events:none;z-index:-1}
+.login-hero:before{width:330px;height:330px;background:#ffffff17;top:-155px;left:-90px}
+.login-hero:after{width:380px;height:380px;background:#ffffff10;bottom:-230px;right:-130px}
+.login-mascot{font-size:clamp(100px,12vw,160px);line-height:1.25;filter:drop-shadow(0 20px 12px #27126b55);animation:mascot-float 4s ease-in-out infinite}
+.login-hero-title{font-size:clamp(24px,3.2vw,39px);font-weight:1000;letter-spacing:-.05em;line-height:1.08;max-width:400px;margin:24px auto 0}
+.login-hero p{max-width:320px;font-size:17px;opacity:.94}
+.login-bubble{position:absolute;background:white;color:#4c32b0;padding:11px 18px;border-radius:18px;font-weight:1000;box-shadow:0 9px 24px #25135d33;transform:rotate(-9deg)}
+.bubble-a{top:13%;left:8%}.bubble-b{top:27%;right:8%;transform:rotate(10deg)}
+.login-stickers{display:flex;flex-wrap:wrap;justify-content:center;gap:9px;margin-top:20px}
+.login-stickers span{border:1px solid #ffffff55;border-radius:999px;padding:8px 11px;background:#ffffff20;font-size:12px;font-weight:800}
+.login-panel{display:flex;flex-direction:column;justify-content:center;margin:0;padding:clamp(22px,4vw,48px);border-radius:30px}
+.login-brand{display:flex;align-items:center;gap:10px;font-size:21px;font-weight:950;letter-spacing:-.05em}
+.brand-mark{display:grid;place-items:center;background:#fff2bb;width:44px;height:44px;border-radius:15px}
+.login-brand strong{color:var(--pri)}
+.login-eyebrow{font-size:12px;font-weight:900;letter-spacing:.15em;color:var(--pri);margin-top:36px}
+.login-panel h1{margin:9px 0;font-size:clamp(28px,3.5vw,40px)}
+.login-subtitle{color:var(--mut);margin:0 0 25px}
+.login-tabs{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:26px;padding:6px;border-radius:17px;background:var(--bg)}
+.login-tab{border-radius:13px;padding:13px 8px;font-weight:850;font-size:15px}
+.login-tab.active{background:var(--c);color:var(--pri);box-shadow:0 3px 13px #33217b1c}
+.login-panel label{font-weight:800;display:block;margin-bottom:4px}
+.login-panel input{background:var(--bg);padding:14px;margin-bottom:18px}
+.login-submit{width:100%;font-size:16px;margin-top:8px}
+.login-footnote{text-align:center;color:var(--mut);font-size:13px;margin-top:24px}
+@keyframes mascot-float{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-12px) rotate(3deg)}}
+@media(max-width:760px){.login-shell{grid-template-columns:1fr;max-width:510px;gap:14px;margin:8px auto}.login-hero{min-height:170px;padding:22px 16px}.login-mascot{font-size:55px}.login-hero-title{font-size:21px;margin-top:4px}.login-hero p,.login-stickers{display:none}.login-bubble{padding:6px 10px;font-size:12px}.bubble-a{top:14%;left:7%}.bubble-b{top:18%;right:7%}.login-panel{padding:24px 20px}.login-eyebrow{margin-top:24px}}
+@media(prefers-reduced-motion:reduce){.login-mascot{animation:none}}
+
 </style></head><body><main id="app"></main><dialog id="d"></dialog>
 <script src="config.js"></script>
 <script>
@@ -121,11 +153,35 @@ async function act(f){try{await f()}catch(e){alert("No se pudo: "+e.message);if(
 
 function login(r="student"){
   role=r;
-  $("app").innerHTML=`<div class="box"><h1>⭐ ENGLISH MGM</h1><div class="row"><button class="chip ${r==="student"?"on":""}" onclick="login('student')">Estudiante</button><button class="chip ${r==="teacher"?"on":""}" onclick="login('teacher')">Profesor</button></div><br>
-  <label>Usuario</label><input id="u" autocapitalize="none" autocomplete="username">
-  <label>${r==="student"?"Clave (5 números)":"Contraseña"}</label><input id="s" type="password" ${r==="student"?'inputmode="numeric" maxlength="5"':""}>
-  <div class="err" id="e"></div><button class="btn" style="width:100%" onclick="doLogin()">Entrar</button></div>`;
+  $("app").innerHTML=`<section class="login-shell">
+    <div class="login-hero" aria-hidden="true">
+      <span class="login-bubble bubble-a">💬 HELLO!</span><span class="login-bubble bubble-b">⭐ +5</span>
+      <div class="login-mascot">🎮</div>
+      <div class="login-hero-title">LEARN · PLAY · LEVEL UP</div>
+      <p>Practica inglés, supera retos y celebra cada logro.</p>
+      <div class="login-stickers"><span>🔤 WORDS</span><span>🏆 STARS</span><span>🚀 LEVELS</span></div>
+    </div>
+    <div class="box login-panel">
+      <div class="login-brand"><span class="brand-mark">⭐</span><span>ENGLISH <strong>MGM</strong></span></div>
+      <div class="login-eyebrow">YOUR ENGLISH ADVENTURE</div>
+      <h1>¡Bienvenido de nuevo!</h1>
+      <p class="login-subtitle">Elige tu perfil e ingresa para continuar.</p>
+      <div class="login-tabs" role="group" aria-label="Tipo de usuario">
+        <button class="login-tab ${r==="student"?"active":""}" aria-pressed="${r==="student"}" onclick="login('student')">🎒 Estudiante</button>
+        <button class="login-tab ${r==="teacher"?"active":""}" aria-pressed="${r==="teacher"}" onclick="login('teacher')">👩‍🏫 Profesor</button>
+      </div>
+      <form onsubmit="event.preventDefault();doLogin()">
+        <label for="u">Usuario</label><input id="u" name="username" autocapitalize="none" autocomplete="username" required placeholder="Escribe tu usuario">
+        <label for="s">${r==="student"?"Clave de acceso (5 números)":"Contraseña"}</label>
+        <input id="s" name="password" type="password" autocomplete="current-password" required ${r==="student"?'inputmode="numeric" maxlength="5"':""} placeholder="Ingresa tu clave">
+        <div class="err" id="e" role="alert" aria-live="polite"></div>
+        <button class="btn login-submit" type="submit">✨ Entrar a mi aventura</button>
+      </form>
+      <p class="login-footnote">¿No tienes acceso? Consulta con tu profesor.</p>
+    </div>
+  </section>`;
 }
+
 async function doLogin(){
   $("e").textContent="";
   try{
