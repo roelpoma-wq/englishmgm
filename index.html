@@ -220,7 +220,31 @@ td,th{padding:10px 7px}
 .avatar-choice.active{border-color:#7758ff;background:#eeeaff}
 .avatar-choice:disabled{opacity:.46;cursor:not-allowed}
 .avatar-studio .avatar-zone{margin:8px auto 14px}
-.teacher-avatar-wrap{display:flex;justify-content:center;margin:2px auto 8px}.teacher-avatar-wrap .avatar-art{width:90px;height:110px;border-radius:22px}.teacher-avatar-wrap .av-acc{font-size:22px}.teacher-avatar-wrap .av-acc.cap,.teacher-avatar-wrap .av-acc.crown{font-size:32px}.teacher-phase-mini{font-size:11px;font-weight:800;opacity:.8;display:block;margin-bottom:5px}.teacher-character-pair{display:flex;align-items:center;justify-content:center;gap:8px;margin:4px auto 9px;min-height:116px}.teacher-character-pair .teacher-avatar-wrap{margin:0}.teacher-mascot-small{display:inline-flex;align-items:center;justify-content:center;flex:0 0 52px;max-width:52px}.teacher-mascot-small .phase-mascot{transform:scale(.56);transform-origin:center;flex-shrink:0;margin:0}.teacher-character-pair .avatar-art{flex-shrink:0}@media(max-width:420px){.teacher-character-pair{gap:2px}.teacher-mascot-small{flex-basis:40px;max-width:40px}.teacher-mascot-small .phase-mascot{transform:scale(.46)}}</style></head><body><main id="app"></main><dialog id="d"></dialog>
+.teacher-avatar-wrap{display:flex;justify-content:center;margin:2px auto 8px}.teacher-avatar-wrap .avatar-art{width:90px;height:110px;border-radius:22px}.teacher-avatar-wrap .av-acc{font-size:22px}.teacher-avatar-wrap .av-acc.cap,.teacher-avatar-wrap .av-acc.crown{font-size:32px}.teacher-phase-mini{font-size:11px;font-weight:800;opacity:.8;display:block;margin-bottom:5px}.teacher-character-pair{display:flex;align-items:center;justify-content:center;gap:8px;margin:4px auto 9px;min-height:116px}.teacher-character-pair .teacher-avatar-wrap{margin:0}.teacher-mascot-small{display:inline-flex;align-items:center;justify-content:center;flex:0 0 52px;max-width:52px}.teacher-mascot-small .phase-mascot{transform:scale(.56);transform-origin:center;flex-shrink:0;margin:0}.teacher-character-pair .avatar-art{flex-shrink:0}@media(max-width:420px){.teacher-character-pair{gap:2px}.teacher-mascot-small{flex-basis:40px;max-width:40px}.teacher-mascot-small .phase-mascot{transform:scale(.46)}}
+/* Character redesign: gender-aware vector portraits and corner phase emblem */
+.avatar-art{background:linear-gradient(145deg,#fff2e8,#e8ecff);border:2px solid #ffffffa6}
+.avatar-art .av-face{top:26%;width:53%;height:42%;border-radius:45% 45% 46% 46%;box-shadow:inset -5px -5px 0 #0000000b}
+.avatar-art .av-hair{top:13%;width:67%;height:39%;border-radius:47% 47% 20% 20%;z-index:2;transform:none}
+.avatar-art .av-hair.long{height:66%;width:77%;border-radius:46% 46% 18% 18%;z-index:1}
+.avatar-art.female .av-hair.default{height:66%;width:78%;border-radius:45% 45% 14% 14%;z-index:1}
+.avatar-art.female .av-hair.short{height:42%;width:72%}
+.avatar-art.female .av-hair.curly{height:58%;width:80%}
+.avatar-art .av-eyes{top:43%;width:31%;z-index:4}
+.avatar-art .av-eyes:before,.avatar-art .av-eyes:after{width:7px;height:8px}
+.avatar-art.female .av-eyes:before,.avatar-art.female .av-eyes:after{box-shadow:0 -3px 0 -1px #34283a}
+.avatar-art .av-smile{z-index:4}
+.avatar-art .av-body{z-index:2;bottom:-12%;width:84%;height:41%}
+.avatar-art .av-acc{z-index:6}
+.avatar-art .av-hair:after{content:"";position:absolute;top:18%;left:4%;width:64%;height:30%;background:var(--hair);border-radius:50% 60% 30% 15%;transform:rotate(-13deg)}
+.avatar-art.female .av-hair.default:after{width:75%;height:25%;left:6%;top:18%}
+.avatar-art .av-face:after{content:"";position:absolute;top:52%;left:49%;width:5%;height:12%;border-right:2px solid #8c5749;border-radius:50%}
+.teacher-character-pair{position:relative;width:108px;height:126px;margin:2px auto 10px;display:block;min-height:0}
+.teacher-character-pair .teacher-avatar-wrap{position:absolute;inset:0;display:block;margin:0}
+.teacher-character-pair .teacher-avatar-wrap .avatar-art{width:108px;height:126px;border-radius:24px}
+.teacher-character-pair .teacher-mascot-small{position:absolute;right:-18px;bottom:-9px;display:flex;align-items:center;justify-content:center;width:63px;height:63px;max-width:none;flex:none;z-index:8;filter:drop-shadow(0 3px 3px #0002)}
+.teacher-character-pair .teacher-mascot-small .phase-mascot{transform:scale(.66);transform-origin:center;margin:0;flex-shrink:0}
+@media(max-width:420px){.teacher-character-pair{width:94px;height:112px}.teacher-character-pair .teacher-avatar-wrap .avatar-art{width:94px;height:112px}.teacher-character-pair .teacher-mascot-small{right:-14px;bottom:-8px;width:58px;height:58px}.teacher-character-pair .teacher-mascot-small .phase-mascot{transform:scale(.59)}}
+</style></head><body><main id="app"></main><dialog id="d"></dialog>
 <script src="config.js"></script>
 <script>
 const PH=[{n:"I’m hungry and sad",c:"#8a909c"},{n:"I want to smile but I can’t",c:"#f08a24"},{n:"I’m almost the best",c:"#2f80ed"},{n:"I’m your Boss",c:"#8b5cf6"},{n:"God",c:"#e0a800"}];
@@ -289,10 +313,10 @@ function out(){
 const AV_DEFAULT={hair:"default",outfit:"default",hairColor:"natural",skin:"default",accessory:"none"};
 const AV_OPTIONS={
  hair:[["default","Clásico"],["short","Corto"],["long","Largo"],["curly","Rizado"],["spiky","Puntas"]],
- outfit:[["default","Uniforme"],["casual","Casual"],["sport","Deportivo"],["hero","Héroe"]],
+ outfit:[["default","Uniforme"],["casual","Casual"],["sport","Deportivo"],["hero","Héroe"],["jacket","Chaqueta"]],
  hairColor:[["natural","Natural"],["brown","Castaño"],["blonde","Rubio"],["red","Rojo"],["blue","Azul"]],
  skin:[["default","Natural"],["light","Claro"],["medium","Medio"],["tan","Trigueño"],["dark","Oscuro"]],
- accessory:[["none","Sin accesorio"],["glasses","Gafas"],["cap","Gorra"],["crown","Corona"]]
+ accessory:[["none","Sin accesorio"],["glasses","Gafas"],["cap","Gorra"],["crown","Corona"],["headphones","Audífonos"]]
 };
 const AV_LEVEL={hair:1,outfit:1,hairColor:2,skin:2,accessory:3};
 const AV_LABEL={hair:"💇 Peinado · 25 pts",outfit:"👕 Ropa · 25 pts",hairColor:"🎨 Color de cabello · 45 pts",skin:"🧑 Tono de piel · 45 pts",accessory:"🕶️ Accesorios · 67 pts"};
@@ -302,12 +326,12 @@ function avatarClean(raw){
  for(const k of Object.keys(a))if(AV_OPTIONS[k].some(x=>x[0]===raw[k]))a[k]=raw[k];
  return a;
 }
-function avatarArt(raw,big=false){
+function avatarArt(raw,big=false,gender="M"){
  const a=avatarClean(raw),hair={natural:"#34283a",brown:"#76482f",blonde:"#d5a847",red:"#b84842",blue:"#3e77df"}[a.hairColor];
  const skin={default:"#e6ad89",light:"#f4d0b2",medium:"#d99b72",tan:"#ad7052",dark:"#754a39"}[a.skin];
- const shirt={default:"#6655d7",casual:"#f17d75",sport:"#38bfa9",hero:"#e6b52d"}[a.outfit];
- const accessory={none:"",glasses:"👓",cap:"🧢",crown:"👑"}[a.accessory];
- return '<div class="avatar-art '+(big?'big':'')+'" style="--hair:'+hair+';--skin:'+skin+';--shirt:'+shirt+'" role="img" aria-label="Avatar personalizado"><span class="av-hair '+a.hair+'"></span><span class="av-face"></span><span class="av-eyes"></span><span class="av-smile"></span><span class="av-body"></span>'+(accessory?'<span class="av-acc '+a.accessory+'">'+accessory+'</span>':'')+'</div>';
+ const shirt={default:"#6655d7",casual:"#f17d75",sport:"#38bfa9",hero:"#e6b52d",jacket:"#3e81c8"}[a.outfit];
+ const accessory={none:"",glasses:"👓",cap:"🧢",crown:"👑",headphones:"🎧"}[a.accessory];
+ return '<div class="avatar-art '+(big?'big':'')+(gender==="F"?' female':' male')+'" style="--hair:'+hair+';--skin:'+skin+';--shirt:'+shirt+'" role="img" aria-label="Avatar personalizado"><span class="av-hair '+a.hair+'"></span><span class="av-face"></span><span class="av-eyes"></span><span class="av-smile"></span><span class="av-body"></span>'+(accessory?'<span class="av-acc '+a.accessory+'">'+accessory+'</span>':'')+'</div>';
 }
 function avatarOpen(){
  if(!avatarStudent)return;
@@ -322,7 +346,7 @@ function avatarPick(k,v){
 }
 function avatarDraw(){
  const level=Number(avatarStudent.unlock_level)||0;
- const h='<div class="avatar-studio"><h3>✨ Mi avatar</h3><p class="av-hint">Personaliza tu personaje. Los desbloqueos son permanentes.</p><div class="avatar-zone">'+avatarArt(avatarDraft,true)+'</div>'+
+ const h='<div class="avatar-studio"><h3>✨ Mi avatar</h3><p class="av-hint">Personaliza tu personaje. Los desbloqueos son permanentes.</p><div class="avatar-zone">'+avatarArt(avatarDraft,true,avatarStudent.gender)+'</div>'+
  Object.keys(AV_OPTIONS).map(k=>'<div class="avatar-group"><strong>'+AV_LABEL[k]+' '+(level<AV_LEVEL[k]?'🔒':'🔓')+'</strong><div class="avatar-options">'+AV_OPTIONS[k].map(([v,label])=>'<button type="button" class="avatar-choice '+(avatarDraft[k]===v?'active':'')+'" '+(avatarBusy||level<AV_LEVEL[k]&&v!==AV_DEFAULT[k]?'disabled':'')+' onclick="avatarPick(\''+k+'\',\''+v+'\')">'+label+'</button>').join('')+'</div></div>').join('')+
  '<div class="row"><button class="btn g" onclick="avatarClose()" '+(avatarBusy?'disabled':'')+'>Cancelar</button><button class="btn ok" onclick="avatarSave()" '+(avatarBusy?'disabled':'')+'>'+(avatarBusy?'Guardando…':'💾 Guardar avatar')+'</button></div></div>';
  $("d").innerHTML=h;
@@ -348,7 +372,7 @@ async function stu(){
     const snap={points:Number(m.points)||0,stars:Number(m.stars)||0,phase:p};
     const prior=lastStudentSnapshot;lastStudentSnapshot=snap;
     $("app").innerHTML=`<div class="box card phase-card phase-hero p${p}" style="--pc:${P.c}">${phaseMascot(m.points)}
-    <h2 class="student-name">${esc(m.name)}</h2><span class="phase-badge">${phaseIcon[p]} ${esc(P.n)}</span><div class="pt">${m.points} <small style="font-size:16px">pts</small></div><div class="phase-stars">⭐ ${m.stars||0} · ${esc(m.room)}</div>${phaseProgress(m.points)}<div class="avatar-zone">${avatarArt(m.avatar_config)}<button class="btn ok" onclick="avatarOpen()">✨ Personalizar avatar</button></div></div>
+    <h2 class="student-name">${esc(m.name)}</h2><span class="phase-badge">${phaseIcon[p]} ${esc(P.n)}</span><div class="pt">${m.points} <small style="font-size:16px">pts</small></div><div class="phase-stars">⭐ ${m.stars||0} · ${esc(m.room)}</div>${phaseProgress(m.points)}<div class="avatar-zone">${avatarArt(m.avatar_config,false,m.gender)}<button class="btn ok" onclick="avatarOpen()">✨ Personalizar avatar</button></div></div>
     ${A.length?actsHtml(A):'<div class="box">🎮 Aún no hay actividades.</div>'}<button class="btn g" onclick="out()">Salir</button>`;
     if(prior){if(snap.phase>prior.phase)rewardToast('🎉 ¡Nueva fase! '+PH[snap.phase].n,true);else if(snap.points>prior.points)rewardToast('🎯 +'+(snap.points-prior.points)+' puntos');else if(snap.stars>prior.stars)rewardToast('⭐ +'+(snap.stars-prior.stars)+' estrella(s)');}
   }catch(e){}
@@ -363,7 +387,7 @@ function drawT(){
   let h=`<header class="teacher-head"><div><span class="teacher-eyebrow">ENGLISH MGM · TEACHER SPACE</span><h1>👩‍🏫 Mi aula interactiva</h1><p>Gestiona tus salones, celebra los logros y crea actividades.</p></div><div class="teacher-head-actions"><button class="btn" onclick="actsT()">🎯 Actividades</button><button class="btn g" onclick="out()">Salir</button></div></header><section class="teacher-stats"><div class="teacher-stat"><span>🏫 Salones</span><strong>${D.length}</strong></div><div class="teacher-stat"><span>🎒 Estudiantes</span><strong>${D.reduce((n,x)=>n+(x.students||[]).length,0)}</strong></div><div class="teacher-stat"><span>⭐ Estrellas</span><strong>${D.reduce((n,x)=>n+(x.students||[]).reduce((v,y)=>v+(Number(y.stars)||0),0),0)}</strong></div></section><div class="row" style="margin:10px 0;overflow-x:auto">`+D.map(x=>`<button class="chip ${x.id===cur?"on":""}" onclick="cur='${x.id}';drawT()">${esc(x.name)}</button>`).join("")+`<button class="chip" onclick="addRoom()">+ Salón</button></div>`;
   if(r){
     h+=`<div class="row" style="margin-bottom:10px"><button class="btn g" onclick="addList()">📋 Agregar lista</button><button class="btn g" onclick="resetPins()">🔑 Nuevas claves</button><button class="btn g" onclick="renRoom()">✏️ Salón</button><button class="btn g" onclick="delRoom()">🗑 Salón</button></div><div class="grid">`+
-    r.students.map(s=>{const p=ph(s.points),P=PH[p];return `<button class="card phase-card p${p}" style="--pc:${P.c}" onclick="sheet('${s.id}')" aria-label="${esc(s.name)}: ${s.points} puntos, ${s.stars||0} estrellas, fase ${esc(P.n)}"><span class="teacher-character-pair"><span class="teacher-avatar-wrap">${avatarArt(s.avatar_config)}</span><span class="teacher-mascot-small">${phaseMascot(s.points)}</span></span><span class="phase-badge">${phaseIcon[p]} ${esc(P.n)}</span><b class="student-name">${esc(s.name)}</b><div class="pt">${s.points} <small style="font-size:12px">pts</small></div><span class="phase-stars">⭐ ${s.stars||0}</span>${phaseProgress(s.points)}</button>`}).join("")+`</div>`;
+    r.students.map(s=>{const p=ph(s.points),P=PH[p];return `<button class="card phase-card p${p}" style="--pc:${P.c}" onclick="sheet('${s.id}')" aria-label="${esc(s.name)}: ${s.points} puntos, ${s.stars||0} estrellas, fase ${esc(P.n)}"><span class="teacher-character-pair"><span class="teacher-avatar-wrap">${avatarArt(s.avatar_config,false,s.gender)}</span><span class="teacher-mascot-small">${phaseMascot(s.points)}</span></span><span class="phase-badge">${phaseIcon[p]} ${esc(P.n)}</span><b class="student-name">${esc(s.name)}</b><div class="pt">${s.points} <small style="font-size:12px">pts</small></div><span class="phase-stars">⭐ ${s.stars||0}</span>${phaseProgress(s.points)}</button>`}).join("")+`</div>`;
   }else h+=`<div class="box">Crea tu primer salón con «+ Salón».</div>`;
   $("app").innerHTML=h;
 }
